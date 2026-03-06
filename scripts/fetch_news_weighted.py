@@ -94,11 +94,11 @@ class WeightedNewsFetcher:
             news = self.fetch_from_google_news(query, max_results=8)
             all_news.extend(news)
 
-        # 尝试获取 Reddit 内容（如果配置了）
+        # 尝试获取 Reddit 内容
         try:
-            from scripts.fetch_reddit_weighted import RedditNewsFetcher
-            reddit_fetcher = RedditNewsFetcher()
-            reddit_posts = reddit_fetcher.fetch_daily_reddit_news(max_news//2)
+            from scripts.fetch_reddit_simple import SimpleRedditFetcher
+            reddit_fetcher = SimpleRedditFetcher()
+            reddit_posts = reddit_fetcher.fetch_reddit_posts(max_news//2)
             all_news.extend(reddit_posts)
         except Exception as e:
             print(f"⚠️ Reddit获取失败: {e}")
@@ -160,6 +160,11 @@ class WeightedNewsFetcher:
         # 国际科技
         international_sources = [
             'techcrunch.com', 'venturebeat.com', 'theinformation.com'
+        ]
+
+        # AI日报
+        daily_sources_list = [
+            'therundown.ai', 'tldr.tech', 'bensbites.co'
         ]
 
         # AI研究
