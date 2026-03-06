@@ -113,9 +113,9 @@ def parse_ai_news_report(report_path: str) -> list:
     return news_items
 
 
-def create_ai_news_content(news_items: list) -> str:
-    """创建AI新闻的富文本内容"""
-    content = []
+def create_ai_news_card_elements(news_items: list) -> list:
+    """创建AI新闻的卡片元素"""
+    elements = []
 
     # 按分类整理
     categories = {}
@@ -125,60 +125,68 @@ def create_ai_news_content(news_items: list) -> str:
             categories[category] = []
         categories[category].append(item)
 
-    # 为每个分类创建内容块
+    # 为每个分类添加卡片元素
     for category, items in categories.items():
-        content.append([
-            {
-                "tag": "text",
-                "text": f"**{category}**",
-                "style": {"bold": True}
-            }
-        ])
+        if items:  # 只添加有内容的分类
+            # 分类标题
+            elements.append({
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": f"**{category}**\n"
+                }
+            })
 
-        for item in items:
-            title = item.get('title', '')
-            url = item.get('url', '')
-            source = item.get('source', '')
+            # 该分类下的新闻
+            for item in items[:10]:  # 每个分类最多10条
+                title = item.get('title', '')
+                url = item.get('url', '')
+                source = item.get('source', '')
 
-            if url and url.startswith('http'):
-                content.append([
-                    {
-                        "tag": "a",
-                        "text": f"▶ {title}",
-                        "href": url
+                # 新闻标题
+                if url and url.startswith('http'):
+                    title_element = f"• [{title}]({url})"
+                else:
+                    title_element = f"• {title}"
+
+                elements.append({
+                    "tag": "div",
+                    "text": {
+                        "tag": "lark_md",
+                        "content": f"{title_element}\n"
                     }
-                ])
-            else:
-                content.append([
-                    {
-                        "tag": "text",
-                        "text": f"▶ {title}"
-                    }
-                ])
+                })
 
-            if source:
-                content.append([
-                    {
-                        "tag": "text",
-                        "text": f"   📰 来源: {source}",
-                        "style": {"color": "#666666"}
-                    }
-                ])
+                # 添加信息源
+                if source:
+                    elements.append({
+                        "tag": "div",
+                        "text": {
+                            "tag": "lark_md",
+                            "content": f"  📰 {source}\n"
+                        }
+                    })
 
-            # 添加空行分隔
-            content.append([])
+            # 分类间添加空行
+            elements.append({
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": ""
+                }
+            })
 
-    # 添加统计信息
+    # 统计信息
     total_count = len(news_items)
-    content.append([
-        {
-            "tag": "text",
-            "text": f"---\n*📊 共 {total_count} 条AI新闻 | 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')}*",
-            "style": {"color": "#666666"}
+    elements.append({
+        "tag": "div",
+        "text": {
+            "tag": "lark_md",
+            "content": f"---\n*📊 共 {total_count} 条AI新闻 | 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M')}*"
         }
-    ])
+    })
 
-    return content
+    return elements
 
 
 def main():
@@ -207,11 +215,11 @@ def main():
 
     print(f"📰 解析到 {len(news_items)} 条AI新闻")
 
-    # 发送富文本消息
+    # 发送卡片消息
     title = f"🤖 AI专报 - {datetime.now().strftime('%Y-%m-%d')}"
-    content = create_ai_news_content(news_items)
+    elements = create_ai_news_card_elements(news_items)
 
-    success = client.send_post(title, content)
+    success = client.send_card(title, elements)
 
     if success:
         print("✅ AI新闻已成功发送到飞书")
