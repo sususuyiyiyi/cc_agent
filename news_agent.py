@@ -155,11 +155,18 @@ class NewsAgent:
                 briefing += f"\n## {category}\n\n"
                 for i, item in enumerate(items[:3], 1):  # 每个分类最多3条
                     title = item.get('title', '')
+                    url = item.get('url', '')
                     weight = item.get('_weight', 1.0)
                     source = item.get('source', '未知来源')
                     summary = item.get('summary', '')
 
-                    briefing += f"### {i}. **{title}**\n"
+                    # 添加超链接到新闻标题
+                    if url and url.startswith('http'):
+                        linked_title = f"[{title}]({url})"
+                    else:
+                        linked_title = title
+
+                    briefing += f"### {i}. **{linked_title}**\n"
                     if summary:
                         if len(summary) > 200:
                             summary = summary[:200] + "..."
