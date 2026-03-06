@@ -181,7 +181,7 @@ class WeightedNewsFetcher:
         # 根据URL分类
         if any(source in base_url for source in research_sources):
             return '🤖 AI前沿'
-        elif any(source in base_url for source in daily_sources):
+        elif any(source in base_url for source in daily_sources_list):
             return '📰 AI日报'
         elif any(source in base_url for source in reddit_sources):
             return '💬 Reddit热议'
