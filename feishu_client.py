@@ -140,17 +140,12 @@ class FeishuClient:
         # 为每个分类添加卡片元素
         for category, items in categories.items():
             if items:  # 只添加有内容的分类
-                # 分类标题
+                # 分类标题 - 使用 lark_md
                 elements.append({
                     "tag": "div",
                     "text": {
                         "tag": "lark_md",
-                        "content": f"**{category}**"
-                    },
-                    "style": {
-                        "backgroundColor": "#f4f5f7",
-                        "borderRadius": "2px",
-                        "padding": "2px 4px"
+                        "content": f"**{category}**\n"
                     }
                 })
 
@@ -166,35 +161,16 @@ class FeishuClient:
 
                     # 新闻标题（带超链接）
                     if url and url.startswith('http'):
-                        title_element = {
-                            "tag": "a",
-                            "text": {
-                                "tag": "plain_text",
-                                "content": title
-                            },
-                            "href": url,
-                            "type": 1  # 1表示链接类型
-                        }
+                        title_md = f"[{title}]({url})"
                     else:
-                        title_element = {
-                            "tag": "text",
-                            "text": {
-                                "tag": "plain_text",
-                                "content": title
-                            }
-                        }
+                        title_md = title
 
                     elements.append({
-                        "tag": "action",
-                        "actions": [
-                            {
-                                "tag": "div",
-                                "text": {
-                                    "tag": "lark_md",
-                                    "content": f"> {title_element['text']['content']}"
-                                }
-                            }
-                        ]
+                        "tag": "div",
+                        "text": {
+                            "tag": "lark_md",
+                            "content": f">{title_md}\n"
+                        }
                     })
 
                     # 添加来源和统计信息
@@ -212,22 +188,20 @@ class FeishuClient:
 
                     if info_text:
                         elements.append({
-                            "tag": "action",
-                            "actions": [
-                                {
-                                    "tag": "div",
-                                    "text": {
-                                        "tag": "lark_md",
-                                        "content": f"{'  '.join(info_text)}"
-                                    }
-                                }
-                            ]
+                            "tag": "div",
+                            "text": {
+                                "tag": "lark_md",
+                                "content": f"{'  '.join(info_text)}\n"
+                            }
                         })
 
-                # 分类间添加分隔线
-                if category != list(categories.keys())[-1]:
+                    # 添加空行分隔
                     elements.append({
-                        "tag": "hr"
+                        "tag": "div",
+                        "text": {
+                            "tag": "lark_md",
+                            "content": ""
+                        }
                     })
 
         # 统计信息
