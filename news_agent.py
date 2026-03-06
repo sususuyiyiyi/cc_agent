@@ -132,82 +132,37 @@ class NewsAgent:
 
 """
 
-        # 分类存储新闻
-        ai_news = []
-        tech_news = []
-        industry_news = []
-        science_news = []
+        # 使用权重信息进行分类
+        categorized_news = {
+            '🤖 AI前沿': [],
+            '📰 AI日报': [],
+            '📱 科技媒体': [],
+            '🌍 国际科技': [],
+            '🏢 行业资讯': [],
+            '🔬 科学研究': []
+        }
 
         for item in news_items:
-            title = item.get('title', '')
-            summary = item.get('summary', item.get('snippet', ''))
-            source = item.get('source', '未知来源')
-            source_type = item.get('source_type', '')
+            category = item.get('_category', '🔬 科学研究')
+            if category in categorized_news:
+                categorized_news[category].append(item)
 
-            news_item = {
-                'title': title,
-                'summary': summary[:200] + "..." if len(summary) > 200 else summary,
-                'source': source,
-                'source_type': source_type
-            }
+        # 按分类添加新闻，优先显示有内容的分类
+        for category, items in categorized_news.items():
+            if items:
+                briefing += f"\n## {category}\n\n"
+                for i, item in enumerate(items[:3], 1):  # 每个分类最多3条
+                    title = item.get('title', '')
+                    weight = item.get('_weight', 1.0)
+                    source = item.get('source', '未知来源')
+                    summary = item.get('summary', '')
 
-            # 简单分类
-            if any(keyword in title.lower() for keyword in ['ai', 'artificial intelligence', 'claude', 'chatgpt', 'openai']):
-                ai_news.append(news_item)
-            elif any(keyword in title.lower() for keyword in ['iphone', 'apple', 'huawei', 'samsung', 'phone']):
-                tech_news.append(news_item)
-            elif any(keyword in title.lower() for keyword in ['industry', 'market', 'business', 'company']):
-                industry_news.append(news_item)
-            else:
-                science_news.append(news_item)
-
-        # 添加AI新闻
-        if ai_news:
-            briefing += "\n## 🤖 AI前沿\n\n"
-            for i, item in enumerate(ai_news[:3], 1):
-                briefing += f"### {i}. **{item['title']}**\n"
-                if item['summary']:
-                    briefing += f"{item['summary']}\n"
-                briefing += f"*来源：{item['source']}*\n\n"
-
-        # 添加科技新闻
-        if tech_news:
-            briefing += "\n## 📱 科技动态\n\n"
-            for i, item in enumerate(tech_news[:3], 1):
-                briefing += f"### {i}. **{item['title']}**\n"
-                if item['summary']:
-                    briefing += f"{item['summary']}\n"
-                briefing += f"*来源：{item['source']}*\n\n"
-
-        # 添加行业新闻
-        if industry_news:
-            briefing += "\n## 🏢 行业资讯\n\n"
-            for i, item in enumerate(industry_news[:3], 1):
-                briefing += f"### {i}. **{item['title']}**\n"
-                if item['summary']:
-                    briefing += f"{item['summary']}\n"
-                briefing += f"*来源：{item['source']}*\n\n"
-
-        # 添加科学新闻
-        if science_news:
-            briefing += "\n## 🔬 科学研究\n\n"
-            for i, item in enumerate(science_news[:3], 1):
-                briefing += f"### {i}. **{item['title']}**\n"
-                if item['summary']:
-                    briefing += f"{item['summary']}\n"
-                briefing += f"*来源：{item['source']}*\n\n"
-
-        # 添加其他新闻（如果还有剩余）
-        other_news = [item for item in news_items
-                     if item not in ai_news[:3] + tech_news[:3] + industry_news[:3] + science_news[:3]]
-        if other_news:
-            briefing += "\n## 📰 其他资讯\n\n"
-            for i, item in enumerate(other_news[:3], 1):
-                briefing += f"### {i}. **{item['title']}**\n"
-                if item.get('summary'):
-                    summary = item['summary'][:200] + "..." if len(item['summary']) > 200 else item['summary']
-                    briefing += f"{summary}\n"
-                briefing += f"*来源：{item.get('source', '未知来源')}*\n\n"
+                    briefing += f"### {i}. **{title}**\n"
+                    if summary:
+                        if len(summary) > 200:
+                            summary = summary[:200] + "..."
+                        briefing += f"{summary}\n"
+                    briefing += f"*来源：{source} | 权重：{weight}*\n\n"
 
         briefing += f"""
 ---
