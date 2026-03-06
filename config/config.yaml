@@ -49,6 +49,14 @@ preferences:
       - https://www.therundown.ai
       - https://tldr.tech/ai
       - https://www.bensbites.co
+      # Reddit社区（AI和科技相关）
+      - https://www.reddit.com/r/artificial
+      - https://www.reddit.com/r/MachineLearning
+      - https://www.reddit.com/r/ChatGPT
+      - https://www.reddit.com/r/openai
+      - https://www.reddit.com/r/technology
+      - https://www.reddit.com/r/programming
+      - https://www.reddit.com/r/compsci
       # 备选源
       - https://www.ithome.com
       - https://www.paperweekly.site
@@ -87,6 +95,13 @@ preferences:
         - https://www.cvmart.net
         - https://www.syncedreview.com
       ai_vertical_weight: 2.0
+      # Reddit社区（中等权重）
+      reddit_sources:
+        - https://www.reddit.com/r/artificial
+        - https://www.reddit.com/r/MachineLearning
+        - https://www.reddit.com/r/ChatGPT
+        - https://www.reddit.com/r/openai
+      reddit_weight: 1.8
       # 科技媒体（中等权重）
       tech_media_sources:
         - https://36kr.com

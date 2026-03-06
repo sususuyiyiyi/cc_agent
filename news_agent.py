@@ -136,6 +136,7 @@ class NewsAgent:
         categorized_news = {
             '🤖 AI前沿': [],
             '📰 AI日报': [],
+            '💬 Reddit热议': [],
             '📱 科技媒体': [],
             '🌍 国际科技': [],
             '🏢 行业资讯': [],

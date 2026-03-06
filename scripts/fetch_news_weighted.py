@@ -55,6 +55,10 @@ class WeightedNewsFetcher:
         for source in weighting.get('ai_vertical_sources', []):
             weights[source] = weighting.get('ai_vertical_weight', 2.0)
 
+        # Reddit社区
+        for source in weighting.get('reddit_sources', []):
+            weights[source] = weighting.get('reddit_weight', 1.8)
+
         # 科技媒体
         for source in weighting.get('tech_media_sources', []):
             weights[source] = weighting.get('tech_media_weight', 1.5)
@@ -151,9 +155,12 @@ class WeightedNewsFetcher:
             'anthropic.com', 'deeplearning.ai'
         ]
 
-        # AI日报
-        daily_sources = [
-            'therundown.ai', 'tldr.tech', 'bensbites.co'
+        # Reddit社区
+        reddit_sources = [
+            'reddit.com/r/artificial', 'reddit.com/r/MachineLearning',
+            'reddit.com/r/ChatGPT', 'reddit.com/r/openai',
+            'reddit.com/r/technology', 'reddit.com/r/programming',
+            'reddit.com/r/compsci'
         ]
 
         base_url = self._extract_base_url(url)
@@ -163,6 +170,8 @@ class WeightedNewsFetcher:
             return '🤖 AI前沿'
         elif any(source in base_url for source in daily_sources):
             return '📰 AI日报'
+        elif any(source in base_url for source in reddit_sources):
+            return '💬 Reddit热议'
         elif any(source in base_url for source in ai_vertical_sources):
             return '🤖 AI前沿'
         elif any(source in base_url for source in tech_media_sources):
