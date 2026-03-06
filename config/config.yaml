@@ -15,43 +15,90 @@ logging:
 preferences:
   news:
     categories:
-    - AI
-    - Technology
-    - Science
+    - AI垂直
+    - 科技媒体
+    - 国际科技
+    - AI研究
+    - AI日报
     language: zh
+    # 按优先级和类别组织的新闻源
     sources:
-    - https://www.zhidx.com
-    - https://www.leiphone.com
-    - https://www.paperweekly.site
-    - https://www.infoq.cn/topic/ai
-    - https://www.cvmart.net
-    - https://36kr.com
-    - https://www.tmtpost.com
-    - https://www.huxiu.com
-    - https://www.geekpark.net
-    - https://www.ithome.com
-    - https://www.latepost.com
-    - https://techcrunch.com
-    - https://artificialintelligence-news.com
-    - https://www.theinformation.com
-    - https://venturebeat.com/ai
-    - https://www.technologyreview.com
-    - https://www.syncedreview.com
-    - https://huggingface.co/blog
-    - https://openai.com/blog
-    - https://deepmind.google/blog
-    - https://www.anthropic.com/news
-    - https://www.therundown.ai
-    - https://www.bensbites.co
-    - https://tldr.tech/ai
-    - https://www.deeplearning.ai/the-batch/
+      # AI垂直
+      - https://www.zhidx.com
+      - https://www.leiphone.com
+      - https://www.cvmart.net
+      - https://www.syncedreview.com
+      - https://www.infoq.cn/topic/ai
+      # 科技媒体
+      - https://36kr.com
+      - https://www.huxiu.com
+      - https://www.geekpark.net
+      - https://www.tmtpost.com
+      - https://www.latepost.com
+      # 国际科技
+      - https://techcrunch.com
+      - https://venturebeat.com/ai
+      - https://www.theinformation.com
+      # AI研究
+      - https://openai.com/blog
+      - https://deepmind.google/blog
+      - https://huggingface.co/blog
+      - https://www.anthropic.com/news
+      - https://www.deeplearning.ai/the-batch/
+      # AI日报
+      - https://www.therundown.ai
+      - https://tldr.tech/ai
+      - https://www.bensbites.co
+      # 备选源
+      - https://www.ithome.com
+      - https://www.paperweekly.site
+      - https://artificialintelligence-news.com
+      - https://www.technologyreview.com
+    # 高优先级源（AI核心和权威媒体）
     priority_sources:
-    - https://openai.com/blog
-    - https://www.zhidx.com
-    - https://www.ithome.com
-    - https://www.therundown.ai
-    - https://www.leiphone.com
-    - https://www.theinformation.com
+      - https://openai.com/blog
+      - https://deepmind.google/blog
+      - https://www.anthropic.com/news
+      - https://www.therundown.ai
+      - https://tldr.tech/ai
+      - https://www.bensbites.co
+      - https://www.zhidx.com
+      - https://36kr.com
+      - https://www.theinformation.com
+    # 新闻权重配置
+    weighting:
+      # AI研究源（最高权重）
+      research_sources:
+        - https://openai.com/blog
+        - https://deepmind.google/blog
+        - https://huggingface.co/blog
+        - https://www.anthropic.com/news
+        weight: 3
+      # AI日报（高权重）
+      daily_sources:
+        - https://www.therundown.ai
+        - https://tldr.tech/ai
+        - https://www.bensbites.co
+        weight: 2.5
+      # AI垂直媒体（高权重）
+      ai_vertical_sources:
+        - https://www.zhidx.com
+        - https://www.leiphone.com
+        - https://www.cvmart.net
+        - https://www.syncedreview.com
+        weight: 2
+      # 科技媒体（中等权重）
+      tech_media_sources:
+        - https://36kr.com
+        - https://www.huxiu.com
+        - https://www.geekpark.net
+        weight: 1.5
+      # 国际科技（中等权重）
+      international_sources:
+        - https://techcrunch.com
+        - https://venturebeat.com/ai
+        - https://www.theinformation.com
+        weight: 1.8
     review:
     auto_save: true
     template: default
