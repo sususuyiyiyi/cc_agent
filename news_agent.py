@@ -79,14 +79,22 @@ class NewsAgent:
                 )
 
             user_prompt = (
-                "你是“资讯su”，请把下面的新闻条目整理成一份中文 Markdown 简报。\n"
-                "要求：\n"
-                "1) 标题为“# 今日新闻简报”，包含日期\n"
-                "2) 先给出 3 条“今日要点”（用项目符号）\n"
-                "3) 再按条目列出新闻（最多 10 条），每条包含：标题、1-2 句摘要、来源（如有 URL 则附上）\n"
-                "4) 摘要要客观，不要编造不存在的信息；如果信息不足就写“细节待确认”。\n"
-                f"日期：{date_str}\n\n"
-                f"新闻条目(JSON)：{compact_items}\n"
+                “你是”资讯su”，请把下面的新闻条目整理成一份精美的中文 Markdown 简报。\n”
+                “要求：\n”
+                “1) 标题为”# 📰 今日新闻简报”，副标题使用日期（如 *2026年3月6日 星期五*）\n”
+                “2) 开头添加一个简短的导语，比如”📱 今日共收录 X 条重要新闻，涵盖 AI、科技、行业动态等”\n”
+                “3) 添加一个”🔥 今日热点”部分，精选 3-5 条最重要的新闻，每条用 **加粗标题** + 简短描述\n”
+                “4) 新闻分类：将新闻分为”🤖 AI前沿”、”📱 科技动态”、”🏢 行业资讯”、”🔬 科学研究”等类别\n”
+                “5) 每条新闻格式：\n”
+                “   - 使用 ## 类标题\n”
+                “   - 标题前添加emoji（根据类别选择）\n”
+                “   - 标题下方显示来源和时间（如 *来源：36氪 | 10:30*）\n”
+                “   - 内容用简洁的语言描述，突出重点\n”
+                “   - 如有重要链接，添加在最后\n”
+                “6) 结尾添加统计数据和生成时间\n”
+                “7) 语言风格：专业但不失活泼，适合职场人士阅读\n”
+                f”日期：{date_str}\n\n”
+                f”新闻条目(JSON)：{compact_items}\n”
             )
 
             briefing = anthropic_messages_create(
@@ -107,33 +115,80 @@ class NewsAgent:
             print(f"⚠️ 模型生成简报失败，改用本地模板：{e}")
 
         # 本地模板（无模型/模型失败时）
-        briefing = f"""# 今日新闻简报
-**日期**: {date_str}
+        briefing = f"""# 📰 今日新闻简报
 
-## 科技资讯
+***{date_str}***
+
+📱 今日共收录 {len(news_items)} 条重要新闻，涵盖 AI、科技、行业动态等
+
+## 🔥 今日热点
+
 """
 
-        for i, item in enumerate(news_items, 1):
+        # 分类存储新闻
+        ai_news = []
+        tech_news = []
+        industry_news = []
+        science_news = []
+
+        for item in news_items:
             title = item.get('title', '')
             summary = item.get('summary', item.get('snippet', ''))
             source = item.get('source', '未知来源')
             source_type = item.get('source_type', '')
 
-            briefing += f"\n### {i}. {title}\n"
+            news_item = {
+                'title': title,
+                'summary': summary[:200] + "..." if len(summary) > 200 else summary,
+                'source': source,
+                'source_type': source_type
+            }
 
-            if summary:
-                if len(summary) > 200:
-                    summary = summary[:200] + "..."
-                briefing += f"{summary}\n"
+            # 简单分类
+            if any(keyword in title.lower() for keyword in ['ai', 'artificial intelligence', 'claude', 'chatgpt', 'openai']):
+                ai_news.append(news_item)
+            elif any(keyword in title.lower() for keyword in ['iphone', 'apple', 'huawei', 'samsung', 'phone']):
+                tech_news.append(news_item)
+            elif any(keyword in title.lower() for keyword in ['industry', 'market', 'business', 'company']):
+                industry_news.append(news_item)
+            else:
+                science_news.append(news_item)
 
-            if source_type == 'reddit':
-                subreddit = item.get('subreddit', '')
-                score = item.get('score', 0)
-                briefing += f"📍 r/{subreddit} | ⬆️ {score}\n"
-            elif source:
-                briefing += f"📍 {source}\n"
+        # 添加AI新闻
+        if ai_news:
+            briefing += "\n## 🤖 AI前沿\n\n"
+            for i, item in enumerate(ai_news[:3], 1):
+                briefing += f"### {i}. **{item['title']}**\n"
+                if item['summary']:
+                    briefing += f"{item['summary']}\n"
+                briefing += f"*来源：{item['source']}*\n\n"
 
-            briefing += "\n"
+        # 添加科技新闻
+        if tech_news:
+            briefing += "\n## 📱 科技动态\n\n"
+            for i, item in enumerate(tech_news[:3], 1):
+                briefing += f"### {i}. **{item['title']}**\n"
+                if item['summary']:
+                    briefing += f"{item['summary']}\n"
+                briefing += f"*来源：{item['source']}*\n\n"
+
+        # 添加行业新闻
+        if industry_news:
+            briefing += "\n## 🏢 行业资讯\n\n"
+            for i, item in enumerate(industry_news[:3], 1):
+                briefing += f"### {i}. **{item['title']}**\n"
+                if item['summary']:
+                    briefing += f"{item['summary']}\n"
+                briefing += f"*来源：{item['source']}*\n\n"
+
+        # 添加科学新闻
+        if science_news:
+            briefing += "\n## 🔬 科学研究\n\n"
+            for i, item in enumerate(science_news[:3], 1):
+                briefing += f"### {i}. **{item['title']}**\n"
+                if item['summary']:
+                    briefing += f"{item['summary']}\n"
+                briefing += f"*来源：{item['source']}*\n\n"
 
         briefing += f"""
 ---
