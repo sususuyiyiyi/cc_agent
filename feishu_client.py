@@ -123,7 +123,7 @@ class FeishuClient:
             return False
 
     def send_news_briefing(self, news_items: list, date: str) -> bool:
-        """发送新闻简报（支持超链接）"""
+        """发送新闻简报（简洁格式，支持超链接）"""
         title = f"📰 今日新闻简报 - {date}"
 
         # 创建卡片元素列表
@@ -140,7 +140,7 @@ class FeishuClient:
         # 为每个分类添加卡片元素
         for category, items in categories.items():
             if items:  # 只添加有内容的分类
-                # 分类标题 - 使用 lark_md
+                # 分类标题
                 elements.append({
                     "tag": "div",
                     "text": {
@@ -149,60 +149,53 @@ class FeishuClient:
                     }
                 })
 
-                # 该分类下的新闻
-                for item in items[:3]:  # 每个分类最多3条
+                # 该分类下的新闻（简洁格式）
+                for item in items[:5]:  # 每个分类最多5条
                     title = item.get('title', '')
                     url = item.get('url', '')
                     source = item.get('source', '')
                     source_type = item.get('source_type', '')
                     subreddit = item.get('subreddit', '')
-                    score = item.get('score', 0)
-                    num_comments = item.get('num_comments', 0)
 
-                    # 新闻标题（带超链接）
+                    # 新闻标题
                     if url and url.startswith('http'):
-                        title_md = f"[{title}]({url})"
+                        title_element = f"• [{title}]({url})"
                     else:
-                        title_md = title
+                        title_element = f"• {title}"
 
                     elements.append({
                         "tag": "div",
                         "text": {
                             "tag": "lark_md",
-                            "content": f">{title_md}\n"
+                            "content": f"{title_element}\n"
                         }
                     })
 
-                    # 添加来源和统计信息
-                    info_text = []
+                    # 添加信息源
+                    source_text = ""
                     if source_type == 'reddit':
-                        if subreddit:
-                            info_text.append(f"📍 r/{subreddit}")
-                        if score > 0:
-                            info_text.append(f"⬆️ {score}")
-                        if num_comments > 0:
-                            info_text.append(f"💬 {num_comments}")
+                        source_text = f"  📍 r/{subreddit}"
                     else:
-                        if source:
-                            info_text.append(f"📍 {source}")
+                        if source and 'news.google.com' not in source:
+                            source_text = f"  📍 {source}"
 
-                    if info_text:
+                    if source_text:
                         elements.append({
                             "tag": "div",
                             "text": {
                                 "tag": "lark_md",
-                                "content": f"{'  '.join(info_text)}\n"
+                                "content": f"{source_text}\n"
                             }
                         })
 
-                    # 添加空行分隔
-                    elements.append({
-                        "tag": "div",
-                        "text": {
-                            "tag": "lark_md",
-                            "content": ""
-                        }
-                    })
+                # 分类间添加空行
+                elements.append({
+                    "tag": "div",
+                    "text": {
+                        "tag": "lark_md",
+                        "content": ""
+                    }
+                })
 
         # 统计信息
         elements.append({
