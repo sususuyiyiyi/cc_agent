@@ -123,27 +123,123 @@ class FeishuClient:
             return False
 
     def send_news_briefing(self, news_items: list, date: str) -> bool:
-        """发送新闻简报"""
+        """发送新闻简报（支持超链接）"""
         title = f"📰 今日新闻简报 - {date}"
 
-        content = [
-            [
-                {
-                    "tag": "text",
-                    "text": "AI 资讯"
-                }
-            ]
-        ]
+        # 创建卡片元素列表
+        elements = []
 
+        # 添加分类标题
+        categories = {}
         for item in news_items:
-            content.append([
-                {
-                    "tag": "text",
-                    "text": f"• {item['title']} ({item['source']})"
-                }
-            ])
+            category = item.get('_category', '🔬 科学研究')
+            if category not in categories:
+                categories[category] = []
+            categories[category].append(item)
 
-        return self.send_post(title, content)
+        # 为每个分类添加卡片元素
+        for category, items in categories.items():
+            if items:  # 只添加有内容的分类
+                # 分类标题
+                elements.append({
+                    "tag": "div",
+                    "text": {
+                        "tag": "lark_md",
+                        "content": f"**{category}**"
+                    },
+                    "style": {
+                        "backgroundColor": "#f4f5f7",
+                        "borderRadius": "2px",
+                        "padding": "2px 4px"
+                    }
+                })
+
+                # 该分类下的新闻
+                for item in items[:3]:  # 每个分类最多3条
+                    title = item.get('title', '')
+                    url = item.get('url', '')
+                    source = item.get('source', '')
+                    source_type = item.get('source_type', '')
+                    subreddit = item.get('subreddit', '')
+                    score = item.get('score', 0)
+                    num_comments = item.get('num_comments', 0)
+
+                    # 新闻标题（带超链接）
+                    if url and url.startswith('http'):
+                        title_element = {
+                            "tag": "a",
+                            "text": {
+                                "tag": "plain_text",
+                                "content": title
+                            },
+                            "href": url,
+                            "type": 1  # 1表示链接类型
+                        }
+                    else:
+                        title_element = {
+                            "tag": "text",
+                            "text": {
+                                "tag": "plain_text",
+                                "content": title
+                            }
+                        }
+
+                    elements.append({
+                        "tag": "action",
+                        "actions": [
+                            {
+                                "tag": "div",
+                                "text": {
+                                    "tag": "lark_md",
+                                    "content": f"> {title_element['text']['content']}"
+                                }
+                            }
+                        ]
+                    })
+
+                    # 添加来源和统计信息
+                    info_text = []
+                    if source_type == 'reddit':
+                        if subreddit:
+                            info_text.append(f"📍 r/{subreddit}")
+                        if score > 0:
+                            info_text.append(f"⬆️ {score}")
+                        if num_comments > 0:
+                            info_text.append(f"💬 {num_comments}")
+                    else:
+                        if source:
+                            info_text.append(f"📍 {source}")
+
+                    if info_text:
+                        elements.append({
+                            "tag": "action",
+                            "actions": [
+                                {
+                                    "tag": "div",
+                                    "text": {
+                                        "tag": "lark_md",
+                                        "content": f"{'  '.join(info_text)}"
+                                    }
+                                }
+                            ]
+                        })
+
+                # 分类间添加分隔线
+                if category != list(categories.keys())[-1]:
+                    elements.append({
+                        "tag": "hr"
+                    })
+
+        # 统计信息
+        elements.append({
+            "tag": "div",
+            "text": {
+                "tag": "lark_md",
+                "content": f"---\n*共 {len(news_items)} 条新闻*"
+            }
+        })
+
+        return self.send_card(title, elements)
 
     def send_wellness_advice(self, advice: str, weather: dict, date: str) -> bool:
         """发送健康建议"""

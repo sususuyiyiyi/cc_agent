@@ -215,48 +215,8 @@ class NewsAgent:
         today = datetime.now()
         date_str = today.strftime('%Y-%m-%d')
 
-        # 构建飞书消息内容
-        title = f"📰 今日新闻简报 - {date_str}"
-
-        content = [[{"tag": "text", "text": "科技资讯"}]]
-
-        for item in news_items:
-            title_text = item.get('title', '')
-            source_type = item.get('source_type', '')
-
-            if source_type == 'reddit':
-                # Reddit 新闻格式
-                subreddit = item.get('subreddit', '')
-                score = item.get('score', 0)
-                comments = item.get('num_comments', 0)
-
-                content.append([
-                    {"tag": "text", "text": f"\n• {title_text}"}
-                ])
-                content.append([
-                    {"tag": "text", "text": f"  📍 r/{subreddit} | ⬆️ {score} | 💬 {comments}"}
-                ])
-            else:
-                # 中文新闻格式
-                source_text = item.get('source', '')
-                snippet_text = item.get('snippet', '')
-
-                content.append([
-                    {"tag": "text", "text": f"\n• {title_text}"}
-                ])
-
-                if snippet_text and len(snippet_text) > 10:
-                    snippet_short = snippet_text[:150] + "..." if len(snippet_text) > 150 else snippet_text
-                    content.append([
-                        {"tag": "text", "text": f"  {snippet_short}"}
-                    ])
-
-                if source_text:
-                    content.append([
-                        {"tag": "text", "text": f"  📍 {source_text}"}
-                    ])
-
-        success = client.send_post(title, content)
+        # 使用新的卡片消息格式（支持超链接）
+        success = client.send_news_briefing(news_items, date_str)
         if success:
             print("✅ 已发送到飞书")
         else:
