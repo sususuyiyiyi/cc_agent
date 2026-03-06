@@ -59,6 +59,54 @@ class NewsAgent:
         today = datetime.now()
         date_str = today.strftime('%Y-%m-%d')
 
+        # 优先用模型把新闻“整理 + 归纳 + 输出可直接发飞书的 Markdown”
+        try:
+            from llm_client import anthropic_messages_create
+
+            # 限制输入长度，避免 payload 过大
+            compact_items = []
+            for item in news_items[:12]:
+                compact_items.append(
+                    {
+                        "title": (item.get("title") or "").strip(),
+                        "snippet": (item.get("summary") or item.get("snippet") or "").strip()[:300],
+                        "source": (item.get("source") or "").strip(),
+                        "url": (item.get("url") or "").strip(),
+                        "source_type": (item.get("source_type") or "").strip(),
+                        "subreddit": (item.get("subreddit") or "").strip(),
+                        "score": item.get("score", 0),
+                    }
+                )
+
+            user_prompt = (
+                "你是“资讯su”，请把下面的新闻条目整理成一份中文 Markdown 简报。\n"
+                "要求：\n"
+                "1) 标题为“# 今日新闻简报”，包含日期\n"
+                "2) 先给出 3 条“今日要点”（用项目符号）\n"
+                "3) 再按条目列出新闻（最多 10 条），每条包含：标题、1-2 句摘要、来源（如有 URL 则附上）\n"
+                "4) 摘要要客观，不要编造不存在的信息；如果信息不足就写“细节待确认”。\n"
+                f"日期：{date_str}\n\n"
+                f"新闻条目(JSON)：{compact_items}\n"
+            )
+
+            briefing = anthropic_messages_create(
+                system="输出必须是 Markdown；语言为简体中文；不要输出代码块围栏。",
+                user=user_prompt,
+                max_tokens=1400,
+                temperature=0.2,
+            )
+
+            # 兜底：确保包含生成时间与统计
+            briefing = briefing.strip()
+            if "---" not in briefing:
+                briefing += "\n\n---\n"
+            briefing += f"*生成时间: {datetime.now().strftime('%H:%M:%S')}*\n"
+            briefing += f"*共 {len(news_items)} 条新闻（输入 {min(len(news_items), 12)} 条给模型）*\n"
+            return briefing
+        except Exception as e:
+            print(f"⚠️ 模型生成简报失败，改用本地模板：{e}")
+
+        # 本地模板（无模型/模型失败时）
         briefing = f"""# 今日新闻简报
 **日期**: {date_str}
 
@@ -74,13 +122,11 @@ class NewsAgent:
             briefing += f"\n### {i}. {title}\n"
 
             if summary:
-                # 限制摘要长度
                 if len(summary) > 200:
                     summary = summary[:200] + "..."
                 briefing += f"{summary}\n"
 
             if source_type == 'reddit':
-                # Reddit 新闻显示 subreddit 信息
                 subreddit = item.get('subreddit', '')
                 score = item.get('score', 0)
                 briefing += f"📍 r/{subreddit} | ⬆️ {score}\n"
