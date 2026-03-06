@@ -236,15 +236,18 @@ class WeightedNewsFetcher:
                 description = item.find('description').text if item.find('description') is not None else ''
                 pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ''
 
+                # 处理Google News链接 - 跟踪重定向获取实际URL
+                actual_url = self._resolve_google_news_link(link)
+
                 # 清理描述
                 clean_description = re.sub('<[^<]+?>', '', description) if description else ''
 
                 # 提取来源
-                source = self._extract_source_from_link(link)
+                source = self._extract_source_from_link(actual_url)
 
                 news_item = {
                     'title': title,
-                    'url': link,
+                    'url': actual_url,
                     'summary': clean_description[:300],
                     'source': source,
                     'source_type': 'google_news',
@@ -286,6 +289,30 @@ class WeightedNewsFetcher:
             return domain_mapping.get(domain, domain)
         except:
             return 'Google News'
+
+    def _resolve_google_news_link(self, google_url: str) -> str:
+        """解析Google News链接，获取实际文章URL"""
+        if not google_url or 'news.google.com' not in google_url:
+            return google_url
+
+        try:
+            # 使用session跟随重定向
+            response = self.session.get(google_url, timeout=10, allow_redirects=True)
+            actual_url = response.url
+
+            # 如果还是Google的链接，尝试提取实际URL
+            if '/articles/' in actual_url or '/url?q=' in actual_url:
+                # 处理 /url?q= 格式
+                if '/url?q=' in actual_url:
+                    from urllib.parse import parse_qs
+                    parsed = parse_qs(actual_url.split('?')[1])
+                    if 'q' in parsed:
+                        actual_url = parsed['q'][0]
+
+            return actual_url
+        except:
+            # 如果解析失败，返回原链接
+            return google_url
 
     def _calculate_score(self, title: str, summary: str, query: str) -> float:
         """计算新闻分数（基于查询词匹配和长度）"""
