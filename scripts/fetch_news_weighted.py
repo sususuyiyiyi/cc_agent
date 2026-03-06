@@ -41,26 +41,27 @@ class WeightedNewsFetcher:
         """获取源权重配置"""
         weights = {}
         prefs = self.config.get('preferences', {}).get('news', {})
+        weighting = prefs.get('weighting', {})
 
         # 研究源
-        for source in prefs.get('weighting', {}).get('research_sources', []):
-            weights[source] = prefs['weighting']['research_sources']['weight']
+        for source in weighting.get('research_sources', []):
+            weights[source] = weighting.get('research_weight', 3.0)
 
         # AI日报
-        for source in prefs.get('weighting', {}).get('daily_sources', []):
-            weights[source] = prefs['weighting']['daily_sources']['weight']
+        for source in weighting.get('daily_sources', []):
+            weights[source] = weighting.get('daily_weight', 2.5)
 
         # AI垂直
-        for source in prefs.get('weighting', {}).get('ai_vertical_sources', []):
-            weights[source] = prefs['weighting']['ai_vertical_sources']['weight']
+        for source in weighting.get('ai_vertical_sources', []):
+            weights[source] = weighting.get('ai_vertical_weight', 2.0)
 
         # 科技媒体
-        for source in prefs.get('weighting', {}).get('tech_media_sources', []):
-            weights[source] = prefs['weighting']['tech_media_sources']['weight']
+        for source in weighting.get('tech_media_sources', []):
+            weights[source] = weighting.get('tech_media_weight', 1.5)
 
         # 国际科技
-        for source in prefs.get('weighting', {}).get('international_sources', []):
-            weights[source] = prefs['weighting']['international_sources']['weight']
+        for source in weighting.get('international_sources', []):
+            weights[source] = weighting.get('international_weight', 1.8)
 
         # 默认权重
         default_sources = self.config.get('preferences', {}).get('news', {}).get('sources', [])

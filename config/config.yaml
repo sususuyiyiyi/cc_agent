@@ -73,33 +73,33 @@ preferences:
         - https://deepmind.google/blog
         - https://huggingface.co/blog
         - https://www.anthropic.com/news
-        weight: 3
+      research_weight: 3.0
       # AI日报（高权重）
       daily_sources:
         - https://www.therundown.ai
         - https://tldr.tech/ai
         - https://www.bensbites.co
-        weight: 2.5
+      daily_weight: 2.5
       # AI垂直媒体（高权重）
       ai_vertical_sources:
         - https://www.zhidx.com
         - https://www.leiphone.com
         - https://www.cvmart.net
         - https://www.syncedreview.com
-        weight: 2
+      ai_vertical_weight: 2.0
       # 科技媒体（中等权重）
       tech_media_sources:
         - https://36kr.com
         - https://www.huxiu.com
         - https://www.geekpark.net
-        weight: 1.5
+      tech_media_weight: 1.5
       # 国际科技（中等权重）
       international_sources:
         - https://techcrunch.com
         - https://venturebeat.com/ai
         - https://www.theinformation.com
-        weight: 1.8
-    review:
+      international_weight: 1.8
+  review:
     auto_save: true
     template: default
   wellness:

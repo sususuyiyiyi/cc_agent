@@ -47,9 +47,9 @@ class NewsAgent:
             aggregator = NewsAggregator()
             news_items = aggregator.fetch_daily_news(max_news=10)
         else:
-            # 使用单一新闻源（中文网站）
-            from scripts.fetch_news_api import RealNewsFetcher
-            fetcher = RealNewsFetcher()
+            # 使用权重新闻获取器（优先级和热点）
+            from scripts.fetch_news_weighted import WeightedNewsFetcher
+            fetcher = WeightedNewsFetcher()
             news_items = fetcher.fetch_daily_news(max_news=10)
 
         return news_items
@@ -83,17 +83,23 @@ class NewsAgent:
                 "你是资讯su，请把下面的新闻条目整理成一份精美的中文 Markdown 简报。\n"
                 "要求：\n"
                 "1) 标题为\"# 📰 今日新闻简报\"，副标题使用日期（如 *2026年3月6日 星期五*）\n"
-                "2) 开头添加一个简短的导语，比如\"📱 今日共收录 X 条重要新闻，涵盖 AI、科技、行业动态等\"\n"
-                "3) 添加一个\"🔥 今日热点\"部分，精选 3-5 条最重要的新闻，每条用 **加粗标题** + 简短描述\n"
-                "4) 新闻分类：将新闻分为\"🤖 AI前沿\"、\"📱 科技动态\"、\"🏢 行业资讯\"、\"🔬 科学研究\"等类别\n"
+                "2) 开头添加一个简短的导语，说明今日新闻概况和热点领域\n"
+                "3) 添加一个\"🔥 今日热点\"部分，精选 3-5 条最重要的新闻（考虑来源权重和相关性）\n"
+                "4) 按照以下分类整理新闻（使用对应的emoji）：\n"
+                "   🤖 AI前沿 - AI垂直媒体和研究机构新闻\n"
+                "   📰 AI日报 - AI日报类媒体精选\n"
+                "   📱 科技媒体 - 科技媒体深度报道\n"
+                "   🌍 国际科技 - 国际科技媒体新闻\n"
+                "   🏢 行业资讯 - 产业动态和商业新闻\n"
+                "   🔬 科学研究 - 科研机构和技术创新\n"
                 "5) 每条新闻格式：\n"
                 "   - 使用 ## 类标题\n"
-                "   - 标题前添加emoji（根据类别选择）\n"
-                "   - 标题下方显示来源和时间（如 *来源：36氪 | 10:30*）\n"
+                "   - 标题前添加emoji（根据类别）\n"
+                "   - 标题下方显示来源和权重（如 *来源：OpenAI | 权重：3.0*）\n"
                 "   - 内容用简洁的语言描述，突出重点\n"
-                "   - 如有重要链接，添加在最后\n"
-                "6) 结尾添加统计数据和生成时间\n"
-                "7) 语言风格：专业但不失活泼，适合职场人士阅读\n"
+                "6) 优先显示高权重新闻（权重>=2.0）\n"
+                "7) 结尾添加权重统计和生成时间\n"
+                "8) 语言风格：专业但不失活泼，适合职场人士阅读\n"
                 f"日期：{date_str}\n\n"
                 f"新闻条目(JSON)：{compact_items}\n"
             )
