@@ -94,15 +94,28 @@ class WeightedNewsFetcher:
             news = self.fetch_from_google_news(query, max_results=8)
             all_news.extend(news)
 
+        # 尝试获取 Reddit 内容（如果配置了）
+        try:
+            from scripts.fetch_reddit_weighted import RedditNewsFetcher
+            reddit_fetcher = RedditNewsFetcher()
+            reddit_posts = reddit_fetcher.fetch_daily_reddit_news(max_news//2)
+            all_news.extend(reddit_posts)
+        except Exception as e:
+            print(f"⚠️ Reddit获取失败: {e}")
+
         # 获取权重并排序
         weighted_news = []
         for item in all_news:
-            source = item.get('url', '').split('/')[2] if item.get('url') else ''
-            base_url = self._extract_base_url(item.get('url', ''))
-            weight = self.source_weights.get(base_url, 1.0)
+            url = item.get('url', '')
+            base_url = self._extract_base_url(url)
+
+            # 如果是Reddit，使用特殊权重
+            if 'reddit.com/r/' in url:
+                item['_weight'] = item.get('_weight', 1.8)  # Reddit默认权重
+            else:
+                item['_weight'] = self.source_weights.get(base_url, 1.0)
 
             # 根据权重调整新闻的排序优先级
-            item['_weight'] = weight
             item['_category'] = self._categorize_news(item)
             weighted_news.append(item)
 
