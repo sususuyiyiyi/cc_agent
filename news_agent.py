@@ -58,8 +58,9 @@ class NewsAgent:
         """创建新闻简报"""
         today = datetime.now()
         date_str = today.strftime('%Y-%m-%d')
+        weekday_str = today.strftime('%A')
 
-        # 优先用模型把新闻“整理 + 归纳 + 输出可直接发飞书的 Markdown”
+        # 优先用模型把新闻"整理 + 归纳 + 输出可直接发飞书的 Markdown"
         try:
             from llm_client import anthropic_messages_create
 
@@ -79,22 +80,22 @@ class NewsAgent:
                 )
 
             user_prompt = (
-                “你是资讯su，请把下面的新闻条目整理成一份精美的中文 Markdown 简报。\n”
-                “要求：\n”
-                “1) 标题为\”# 📰 今日新闻简报\”，副标题使用日期（如 *2026年3月6日 星期五*）\n”
-                “2) 开头添加一个简短的导语，比如\”📱 今日共收录 X 条重要新闻，涵盖 AI、科技、行业动态等\”\n”
-                “3) 添加一个\”🔥 今日热点\”部分，精选 3-5 条最重要的新闻，每条用 **加粗标题** + 简短描述\n”
-                “4) 新闻分类：将新闻分为\”🤖 AI前沿\”、\”📱 科技动态\”、\”🏢 行业资讯\”、\”🔬 科学研究\”等类别\n”
-                “5) 每条新闻格式：\n”
-                “   - 使用 ## 类标题\n”
-                “   - 标题前添加emoji（根据类别选择）\n”
-                “   - 标题下方显示来源和时间（如 *来源：36氪 | 10:30*）\n”
-                “   - 内容用简洁的语言描述，突出重点\n”
-                “   - 如有重要链接，添加在最后\n”
-                “6) 结尾添加统计数据和生成时间\n”
-                “7) 语言风格：专业但不失活泼，适合职场人士阅读\n”
-                f”日期：{date_str}\n\n”
-                f”新闻条目(JSON)：{compact_items}\n”
+                "你是资讯su，请把下面的新闻条目整理成一份精美的中文 Markdown 简报。\n"
+                "要求：\n"
+                "1) 标题为\"# 📰 今日新闻简报\"，副标题使用日期（如 *2026年3月6日 星期五*）\n"
+                "2) 开头添加一个简短的导语，比如\"📱 今日共收录 X 条重要新闻，涵盖 AI、科技、行业动态等\"\n"
+                "3) 添加一个\"🔥 今日热点\"部分，精选 3-5 条最重要的新闻，每条用 **加粗标题** + 简短描述\n"
+                "4) 新闻分类：将新闻分为\"🤖 AI前沿\"、\"📱 科技动态\"、\"🏢 行业资讯\"、\"🔬 科学研究\"等类别\n"
+                "5) 每条新闻格式：\n"
+                "   - 使用 ## 类标题\n"
+                "   - 标题前添加emoji（根据类别选择）\n"
+                "   - 标题下方显示来源和时间（如 *来源：36氪 | 10:30*）\n"
+                "   - 内容用简洁的语言描述，突出重点\n"
+                "   - 如有重要链接，添加在最后\n"
+                "6) 结尾添加统计数据和生成时间\n"
+                "7) 语言风格：专业但不失活泼，适合职场人士阅读\n"
+                f"日期：{date_str}\n\n"
+                f"新闻条目(JSON)：{compact_items}\n"
             )
 
             briefing = anthropic_messages_create(
@@ -117,7 +118,7 @@ class NewsAgent:
         # 本地模板（无模型/模型失败时）
         briefing = f"""# 📰 今日新闻简报
 
-***{date_str}***
+***{date_str} {weekday_str}***
 
 📱 今日共收录 {len(news_items)} 条重要新闻，涵盖 AI、科技、行业动态等
 
@@ -189,6 +190,18 @@ class NewsAgent:
                 if item['summary']:
                     briefing += f"{item['summary']}\n"
                 briefing += f"*来源：{item['source']}*\n\n"
+
+        # 添加其他新闻（如果还有剩余）
+        other_news = [item for item in news_items
+                     if item not in ai_news[:3] + tech_news[:3] + industry_news[:3] + science_news[:3]]
+        if other_news:
+            briefing += "\n## 📰 其他资讯\n\n"
+            for i, item in enumerate(other_news[:3], 1):
+                briefing += f"### {i}. **{item['title']}**\n"
+                if item.get('summary'):
+                    summary = item['summary'][:200] + "..." if len(item['summary']) > 200 else item['summary']
+                    briefing += f"{summary}\n"
+                briefing += f"*来源：{item.get('source', '未知来源')}*\n\n"
 
         briefing += f"""
 ---
