@@ -1,0 +1,139 @@
+# 新闻 API 配置文件
+# 选择一个或多个新闻 API 服务进行配置
+
+# ============================================
+# Reddit API (热门社区讨论)
+# ============================================
+reddit:
+  enabled: false
+  # 在 https://www.reddit.com/prefs/apps 创建应用获取
+  # 注意: 选择 "script" 类型的应用
+  client_id: ""  # Reddit App Client ID
+  client_secret: ""  # Reddit App Client Secret
+  user_agent: "CC-Agent:v1.0:by /u/YourRedditUsername"
+  # 每分钟请求限制: 60 次（认证后）
+  rate_limit: 60
+  # 支持的 subreddits
+  subreddits:
+    ai:
+      - artificial
+      - MachineLearning
+      - ArtificialIntelligence
+      - ChatGPT
+      - openai
+      - localLLaMA
+    tech:
+      - technology
+      - programming
+      - compsci
+      - Python
+
+# ============================================
+# 选项 1: NewsAPI.org (推荐)
+# ============================================
+newsapi:
+  enabled: false
+  api_key: ""  # 在 https://newsapi.org/ 注册获取
+  base_url: "https://newsapi.org/v2"
+  # 支持的类别: business, entertainment, general, health, science, sports, technology
+  categories: ["technology", "science"]
+  language: "zh"
+  country: "cn"  # 中国
+  page_size: 20
+  # 免费版限制: 100次请求/天
+
+# ============================================
+# 选项 2: GNews API
+# ============================================
+gnews:
+  enabled: false
+  api_key: ""  # 在 https://gnews.io/ 注册获取
+  base_url: "https://gnews.io/api/v4"
+  # 支持的类别: general, world, nation, business, technology, entertainment, sports, science, health
+  categories: ["technology", "science"]
+  language: "zh"
+  max_articles: 20
+  # 免费版限制: 100次请求/天，10条/请求
+
+# ============================================
+# 选项 3: Bing News Search API (微软)
+# ============================================
+bing_news:
+  enabled: false
+  api_key: ""  # 在 https://portal.azure.com/ 注册获取
+  base_url: "https://api.bing.microsoft.com/v7.0/news"
+  # 免费额度: 1000次请求/月
+  max_results: 20
+  market: "zh-CN"
+
+# ============================================
+# 选项 4: Google News RSS (免费，但有限制)
+# ============================================
+google_news_rss:
+  enabled: false
+  # 不需要 API key，但可能被限制访问
+  base_url: "https://news.google.com/rss"
+  topics:
+    - "https://news.google.com/rss/search?q=AI&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+    - "https://news.google.com/rss/search?q=人工智能&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+    - "https://news.google.com/rss/search?q=OpenAI+ChatGPT&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+  # 注意: RSS 可能有访问限制
+
+# ============================================
+# 选项 5: 头条新闻 API (需要企业认证)
+# ============================================
+toutiao_news:
+  enabled: false
+  # 需要在 https://developer.toutiao.com/ 注册
+  # 需要企业账号和开发者认证
+  api_key: ""
+  api_secret: ""
+  base_url: "https://api.toutiao.com"
+
+# ============================================
+# 自定义 RSS 订阅源
+# ============================================
+custom_rss:
+  enabled: true
+  # 可以添加任意 RSS 源
+  feeds:
+    - name: "新智元"
+      url: "https://www.zhidx.com/feed"
+      enabled: true
+    - name: "AI科技评论"
+      url: "https://www.leiphone.com/feed"
+      enabled: true
+    - name: "机器之心"
+      url: "https://www.jiqizhixin.com/rss"
+      enabled: true
+    - name: "InfoQ AI"
+      url: "https://www.infoq.cn/feed"
+      enabled: true
+    - name: "36氪科技"
+      url: "https://36kr.com/feed"
+      enabled: true
+    - name: "IT之家"
+      url: "https://www.ithome.com/rss/"
+      enabled: true
+    - name: "虎嗅科技"
+      url: "https://www.huxiu.com/rss/0.xml"
+      enabled: true
+    - name: "极客公园"
+      url: "https://www.geekpark.net/rss"
+      enabled: true
+
+# ============================================
+# 备用方案: 网页爬虫 (需要维护)
+# ============================================
+web_scraper:
+  enabled: false
+  # 支持的网站列表
+  sources:
+    - name: "新智元"
+      base_url: "https://www.zhidx.com"
+      article_selector: "div.article-item"
+      enabled: false
+    - name: "AI科技评论"
+      base_url: "https://www.leiphone.com"
+      article_selector: "div.post-item"
+      enabled: false

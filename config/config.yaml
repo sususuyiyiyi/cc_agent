@@ -1,0 +1,100 @@
+feishu:
+  app_id: ''
+  app_secret: ''
+  enabled: true
+  message:
+    news_enabled: true
+    review_enabled: true
+    wellness_enabled: true
+  webhook_url: https://open.feishu.cn/open-apis/bot/v2/hook/e3990900-85a3-44b6-a025-9b7175b191a0
+logging:
+  backup_count: 5
+  file: ./logs/cc_agent.log
+  level: INFO
+  max_size_mb: 10
+preferences:
+  news:
+    categories:
+    - AI
+    - Technology
+    - Science
+    language: zh
+    sources:
+    - https://www.zhidx.com
+    - https://www.leiphone.com
+    - https://www.paperweekly.site
+    - https://www.infoq.cn/topic/ai
+    - https://www.cvmart.net
+    - https://36kr.com
+    - https://www.tmtpost.com
+    - https://www.huxiu.com
+    - https://www.geekpark.net
+    - https://www.ithome.com
+    - https://www.latepost.com
+    - https://techcrunch.com
+    - https://artificialintelligence-news.com
+    - https://www.theinformation.com
+    - https://venturebeat.com/ai
+    - https://www.technologyreview.com
+    - https://www.syncedreview.com
+    - https://huggingface.co/blog
+    - https://openai.com/blog
+    - https://deepmind.google/blog
+    - https://www.anthropic.com/news
+    - https://www.therundown.ai
+    - https://www.bensbites.co
+    - https://tldr.tech/ai
+    - https://www.deeplearning.ai/the-batch/
+    priority_sources:
+    - https://openai.com/blog
+    - https://www.zhidx.com
+    - https://www.ithome.com
+    - https://www.therundown.ai
+    - https://www.leiphone.com
+    - https://www.theinformation.com
+    review:
+    auto_save: true
+    template: default
+  wellness:
+    include_diet: true
+    include_outfit: true
+    temperature_unit: celsius
+scheduling:
+  enabled: true
+  timezone: Asia/Shanghai
+  news_su:
+    enabled: true
+    time: 08:00
+  review_su:
+    enabled: true
+    time: '20:00'
+  wellness_su:
+    enabled: true
+    time: 08:30
+storage:
+  backup_dir: ./backups
+  backup_enabled: false
+  backup_retention_days: 30
+  data_dir: ./data
+user:
+  location:
+    city: Shanghai
+    country: China
+    lat: 31.2304
+    lon: 121.4737
+  name: susu
+  timezone: Asia/Shanghai
+weather:
+  enabled: false
+  openweathermap:
+    api_key: ''
+    units: metric
+  provider: openweathermap
+  qweather:
+    api_key: ''
+    units: metric
+websearch:
+  enabled: true
+  max_results: 10
+  search_engine: default
+  timeout: 30

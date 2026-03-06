@@ -1,0 +1,18 @@
+# CC Agent Python 依赖
+
+# 基础依赖
+pyyaml>=6.0
+requests>=2.31.0
+
+# 任务调度
+apscheduler>=3.10.0
+
+# HTTP 请求
+httpx>=0.24.0
+
+# MCP 相关
+mcp>=0.9.0
+
+# 可选依赖
+# python-dotenv>=1.0.0  # 环境变量管理
+# python-dateutil>=2.8.0  # 日期处理
