@@ -116,13 +116,20 @@ test_log_dir() {
     if [ -d "$PROJECT_DIR/logs" ]; then
         print_success "日志目录存在"
 
-        # 检查日志文件
-        if [ -f "$PROJECT_DIR/logs/cc_agent_service.log" ]; then
-            print_info "服务日志存在"
+        # 检查服务日志文件
+        if [ -f "$PROJECT_DIR/logs/scheduler_service.log" ]; then
+            print_info "调度器服务日志存在"
             echo "最近 5 行:"
-            tail -5 "$PROJECT_DIR/logs/cc_agent_service.log"
+            tail -5 "$PROJECT_DIR/logs/scheduler_service.log"
         else
-            print_warning "服务日志尚未创建"
+            print_warning "调度器服务日志尚未创建"
+        fi
+
+        # 检查执行日志
+        if [ -f "$PROJECT_DIR/logs/scheduler_execution.log" ]; then
+            print_info "调度器执行日志存在"
+        else
+            print_warning "调度器执行日志尚未创建"
         fi
     else
         print_error "日志目录不存在"
@@ -131,20 +138,25 @@ test_log_dir() {
 }
 
 test_cron() {
-    print_step "测试定时任务"
+    print_step "测试调度器状态"
 
-    if crontab -l 2>/dev/null | grep -q "news_agent"; then
-        print_success "新闻定时任务已配置"
-        crontab -l | grep "news_agent"
-    else
-        print_warning "新闻定时任务未配置"
-    fi
+    if [ -f "$PROJECT_DIR/logs/scheduler_health.json" ]; then
+        print_success "调度器健康检查文件存在"
 
-    if crontab -l 2>/dev/null | grep -q "wellness_agent"; then
-        print_success "健康提醒定时任务已配置"
-        crontab -l | grep "wellness_agent"
+        # 检查调度器是否运行
+        if grep -q '"scheduler_running": true' "$PROJECT_DIR/logs/scheduler_health.json"; then
+            print_success "调度器运行正常"
+        else
+            print_warning "调度器可能未运行"
+        fi
+
+        # 检查任务配置
+        if grep -q '"jobs_in_scheduler"' "$PROJECT_DIR/logs/scheduler_health.json"; then
+            print_info "已配置的任务:"
+            grep -o '"[^"]*"' "$PROJECT_DIR/logs/scheduler_health.json" | grep -E '(news_su|wellness_su|review_su)' | tr -d '"' || print_warning "未找到任务"
+        fi
     else
-        print_warning "健康提醒定时任务未配置"
+        print_warning "调度器健康检查文件不存在"
     fi
 }
 

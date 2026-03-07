@@ -445,7 +445,7 @@ create_systemd_service() {
 
     cat > "$SERVICE_FILE" << EOF
 [Unit]
-Description=CC Agent News Service
+Description=CC Agent Scheduler Daemon
 After=network.target
 
 [Service]
@@ -454,11 +454,11 @@ User=root
 WorkingDirectory=$PROJECT_DIR
 Environment="PATH=$PROJECT_DIR/$VENV_NAME/bin"
 Environment="PYTHONPATH=$PROJECT_DIR"
-ExecStart=$PROJECT_DIR/$VENV_NAME/bin/python3 $PROJECT_DIR/news_agent.py
+ExecStart=$PROJECT_DIR/$VENV_NAME/bin/python3 $PROJECT_DIR/scheduler_daemon.py
 Restart=always
 RestartSec=10
-StandardOutput=append:$PROJECT_DIR/logs/cc_agent_service.log
-StandardError=append:$PROJECT_DIR/logs/cc_agent_service_error.log
+StandardOutput=append:$PROJECT_DIR/logs/scheduler_service.log
+StandardError=append:$PROJECT_DIR/logs/scheduler_service_error.log
 
 [Install]
 WantedBy=multi-user.target
@@ -470,33 +470,32 @@ EOF
     print_success "systemd 服务创建完成"
 }
 
-# 创建 cron 服务（用于定时任务）
-create_cron_service() {
-    print_step "配置定时任务"
+# 创建环境变量文件模板
+create_env_template() {
+    print_step "创建环境变量文件模板"
 
-    # 获取 Python 路径
-    PYTHON_PATH="$PROJECT_DIR/$VENV_NAME/bin/python3"
-    LOG_DIR="$PROJECT_DIR/logs"
+    ENV_FILE="$PROJECT_DIR/.env"
 
-    print_info "配置定时任务..."
-    print_info "每天 08:00 发送新闻"
-    print_info "每天 08:30 发送健康提醒"
+    if [ ! -f "$ENV_FILE" ]; then
+        print_info "创建 .env 文件模板..."
 
-    # 创建 crontab
-    cat > /tmp/cc_agent_cron << EOF
-# CC Agent 定时任务
-# 每天早上 8 点发送新闻
-0 8 * * * cd $PROJECT_DIR && $PYTHON_PATH news_agent.py >> $LOG_DIR/news_cron.log 2>&1
+        cat > "$ENV_FILE" << 'EOF'
+# Claude/智谱 AI API 配置
+ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+ANTHROPIC_AUTH_TOKEN=your_api_key_here
+ANTHROPIC_MODEL=glm-4.5-air
 
-# 每天早上 8:30 发送健康提醒
-30 8 * * * cd $PROJECT_DIR && $PYTHON_PATH wellness_agent.py >> $LOG_DIR/wellness_cron.log 2>&1
+# 时区
+TZ=Asia/Shanghai
 EOF
 
-    # 安装 crontab
-    crontab /tmp/cc_agent_cron
-    rm /tmp/cc_agent_cron
+        chmod 600 "$ENV_FILE"
+        print_success ".env 文件模板已创建"
+    else
+        print_info ".env 文件已存在，跳过创建"
+    fi
 
-    print_success "定时任务配置完成"
+    print_warning "请记得修改 .env 中的 API 密钥！"
 }
 
 # 设置权限
@@ -579,13 +578,17 @@ show_status() {
     systemctl status "$SERVICE_NAME" --no-pager || true
 
     echo ""
-    print_info "定时任务列表:"
-    crontab -l | grep -E "(news|wellness)" || true
+    print_info "调度器健康检查:"
+    if [ -f "$PROJECT_DIR/logs/scheduler_health.json" ]; then
+        cat "$PROJECT_DIR/logs/scheduler_health.json"
+    else
+        print_warning "健康检查文件尚未创建（服务启动后会自动创建）"
+    fi
 
     echo ""
     print_info "最近的日志:"
-    if [ -f "$PROJECT_DIR/logs/cc_agent_service.log" ]; then
-        tail -10 "$PROJECT_DIR/logs/cc_agent_service.log"
+    if [ -f "$PROJECT_DIR/logs/scheduler_service.log" ]; then
+        tail -10 "$PROJECT_DIR/logs/scheduler_service.log"
     else
         print_warning "日志文件尚未创建"
     fi
@@ -605,19 +608,31 @@ show_deployment_info() {
     echo "1. 请修改配置文件中的 webhook_url："
     echo "   vim $PROJECT_DIR/config/config.yaml"
     echo ""
-    echo "2. 修改配置后重启服务："
+    echo "2. 请修改 .env 文件中的 API 密钥："
+    echo "   vim $PROJECT_DIR/.env"
+    echo ""
+    echo "3. 修改配置后重启服务："
     echo "   systemctl restart $SERVICE_NAME"
     echo ""
-    echo "3. 查看服务状态："
+    echo "4. 查看服务状态："
     echo "   systemctl status $SERVICE_NAME"
     echo ""
-    echo "4. 查看日志："
-    echo "   tail -f $PROJECT_DIR/logs/cc_agent_service.log"
+    echo "5. 查看调度器日志："
+    echo "   tail -f $PROJECT_DIR/logs/scheduler_execution.log"
     echo ""
-    echo "5. 测试新闻功能："
-    echo "   cd $PROJECT_DIR && source venv/bin/activate && python3 news_agent.py"
+    echo "6. 查看服务日志："
+    echo "   tail -f $PROJECT_DIR/logs/scheduler_service.log"
     echo ""
-    echo "6. 常用命令："
+    echo "7. 查看健康检查："
+    echo "   cat $PROJECT_DIR/logs/scheduler_health.json"
+    echo ""
+    echo "8. 测试各个功能："
+    echo "   cd $PROJECT_DIR && source venv/bin/activate"
+    echo "   python3 news_agent.py     # 测试新闻"
+    echo "   python3 wellness_agent.py  # 测试健康提醒"
+    echo "   python3 review_agent.py    # 测试回顾"
+    echo ""
+    echo "9. 常用命令："
     echo "   systemctl start $SERVICE_NAME   # 启动服务"
     echo "   systemctl stop $SERVICE_NAME    # 停止服务"
     echo "   systemctl restart $SERVICE_NAME # 重启服务"
@@ -660,7 +675,7 @@ main() {
 
     # 配置服务
     create_systemd_service
-    create_cron_service
+    create_env_template
     setup_permissions
     install_monitor_script
 
