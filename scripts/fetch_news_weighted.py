@@ -183,25 +183,25 @@ class WeightedNewsFetcher:
 
         base_url = self._extract_base_url(url)
 
-        # 根据URL分类
+        # 根据URL分类（映射到新的三个分类）
         if any(source in base_url for source in research_sources):
             return '🤖 AI前沿'
         elif any(source in base_url for source in daily_sources_list):
-            return '📰 AI日报'
+            return '🤖 AI前沿'
         elif any(source in base_url for source in reddit_sources):
-            return '💬 Reddit热议'
+            return '🤖 AI前沿'
         elif any(source in base_url for source in ai_vertical_sources):
             return '🤖 AI前沿'
         elif any(source in base_url for source in tech_media_sources):
-            return '📱 科技媒体'
+            return '📱 商业动态'
         elif any(source in base_url for source in international_sources):
-            return '🌍 国际科技'
+            return '🌐 科技新闻'
         elif 'ai' in title or '人工智能' in title:
             return '🤖 AI前沿'
         elif 'tech' in title or '科技' in title:
-            return '📱 科技动态'
+            return '📱 商业动态'
         else:
-            return '🔬 科学研究'
+            return '🌐 科技新闻'
 
     def _deduplicate_news(self, news_list: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """去重新闻（基于标题相似度）"""

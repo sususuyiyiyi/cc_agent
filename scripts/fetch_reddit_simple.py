@@ -96,7 +96,7 @@ class SimpleRedditFetcher:
                 post['_weight'] = 2.0
             else:
                 post['_weight'] = 1.8
-            post['_category'] = '💬 Reddit热议'
+            post['_category'] = '🤖 AI前沿'
 
         return mock_posts
 
@@ -170,7 +170,7 @@ class SimpleRedditFetcher:
                     'published_at': '2026-03-06T00:00:00Z',
                     'num_comments': 0,  # RSS不提供评论数
                     'score': 0,  # RSS不提供投票数
-                    '_category': '💬 Reddit热议',
+                    '_category': '🤖 AI前沿',
                     '_weight': 1.8
                 }
                 posts.append(post)

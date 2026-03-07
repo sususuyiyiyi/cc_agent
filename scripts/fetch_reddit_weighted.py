@@ -84,7 +84,7 @@ class RedditNewsFetcher:
         for post in all_posts:
             weight = self._calculate_post_weight(post)
             post['_weight'] = weight
-            post['_category'] = '💬 Reddit热议'
+            post['_category'] = '🤖 AI前沿'
             weighted_posts.append(post)
 
         # 去重和排序
