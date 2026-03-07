@@ -6,7 +6,7 @@ feishu:
     news_enabled: true
     review_enabled: true
     wellness_enabled: true
-  webhook_url: https://open.feishu.cn/open-apis/bot/v2/hook/e3990900-85a3-44b6-a025-9b7175b191a0
+  webhook_url: https://open.feishu.cn/open-apis/bot/v2/hook/41b45be3-637e-45f1-a993-b30661f913b6
 logging:
   backup_count: 5
   file: ./logs/cc_agent.log
