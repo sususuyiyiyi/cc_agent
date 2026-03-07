@@ -1,5 +1,22 @@
 # CC Agent 定时任务说明
 
+## 为什么一关电脑 / 关终端，定时就失效？
+
+常见有两种情况：
+
+1. **你是用「终端里运行」或 `./start_scheduler.sh` 启动的**  
+   调度器是当前终端里的一个进程，关掉终端或关掉电脑，进程就没了，定时自然不会再跑。
+
+2. **即使用 launchd，合盖/休眠时也不会跑**  
+   Mac 合盖或休眠后，系统不会执行任何用户程序，所以 8:00 的新闻如果在合盖/休眠期间，就不会触发。只有**电脑处于开机、未休眠**时，定时任务才会在设定时间执行。
+
+**正确做法**：用 **launchd** 把调度器当成「后台服务」跑，这样：
+- 关掉终端不会停（服务在后台）
+- 开机/登录后可以自动拉起（配合 `RunAtLoad`）
+- 合盖/休眠时仍不会跑——若希望合盖时也能准时收新闻，需要机器在到点时不休眠（插电 + 系统设置里不自动休眠），或把任务放到「一直开着的机器/云上」跑。
+
+---
+
 ## 当前状态
 
 系统已配置两种定时任务方式：
@@ -21,50 +38,30 @@
 
 ## 确保任务运行的方法
 
-### 方法一：保持 launchd 运行（推荐）
+### 方法一：用 launchd 后台跑（推荐，关终端也不停）
 ```bash
-# 启动调度器
+# 1）首次使用：安装 launchd 配置（把 plist 装到 ~/Library/LaunchAgents）
+./manage_launchd.sh install
+
+# 2）在项目根目录建 .env，写上模型 API 等（供定时任务用）
+#    例如：ANTHROPIC_BASE_URL=... ANTHROPIC_AUTH_TOKEN=... ANTHROPIC_MODEL=glm-4.5-air
+
+# 3）启动服务（之后关掉终端也会在后台跑）
 ./manage_launchd.sh start
 
 # 查看状态
 ./manage_launchd.sh status
 
 # 查看日志
-tail -f logs/scheduler.stderr.log
+./manage_launchd.sh logs
+# 或 tail -f logs/scheduler.stderr.log
 ```
 
 ### 方法二：只使用 cron（已配置）
 cron 任务已经设置好，即使电脑关闭后开机也会自动运行。
 
-### 方法三：创建开机自启动脚本
-创建一个开机脚本确保 launchd 服务运行：
-
-```bash
-# 创建开机脚本
-cat > ~/Library/LaunchAgents/com.susu.ccaagent.bootstrap.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.susu.ccaagent.bootstrap</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/bin/sh</string>
-        <string>-c</string>
-        <string>sleep 30; launchctl load ~/Library/LaunchAgents/com.susu.ccaagent.scheduler.plist; launchctl start com.susu.ccaagent.scheduler</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>StartInterval</key>
-    <integer>300</integer>
-</dict>
-</plist>
-EOF
-
-# 加载脚本
-launchctl load ~/Library/LaunchAgents/com.susu.ccaagent.bootstrap.plist
-```
+### 方法三：开机自启（可选）
+用 `./manage_launchd.sh install` 装好的 plist 里已设置 `RunAtLoad`，**登录后 launchd 会自动加载**；若你希望每次开机再显式拉起一次，可再做一个 bootstrap plist（一般不需要）。
 
 ## 验证任务运行
 

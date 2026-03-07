@@ -103,17 +103,17 @@ case "$1" in
         echo ""
         echo "📄 服务日志:"
         echo "============================================================"
-        if [ -f "/Users/sususu/cc_agent/logs/scheduler.stdout.log" ]; then
+        if [ -f "$PROJECT_ROOT/logs/scheduler.stdout.log" ]; then
             echo "标准输出 (最近 20 行):"
-            tail -20 /Users/sususu/cc_agent/logs/scheduler.stdout.log
+            tail -20 "$PROJECT_ROOT/logs/scheduler.stdout.log"
         else
             echo "⚠️ 标准输出日志文件不存在"
         fi
 
         echo ""
-        if [ -f "/Users/sususu/cc_agent/logs/scheduler.stderr.log" ]; then
+        if [ -f "$PROJECT_ROOT/logs/scheduler.stderr.log" ]; then
             echo "标准错误 (最近 20 行):"
-            tail -20 /Users/sususu/cc_agent/logs/scheduler.stderr.log
+            tail -20 "$PROJECT_ROOT/logs/scheduler.stderr.log"
         else
             echo "⚠️ 标准错误日志文件不存在"
         fi
@@ -122,9 +122,10 @@ case "$1" in
 
     *)
         echo ""
-        echo "用法: ./manage_launchd.sh {status|start|stop|restart|logs}"
+        echo "用法: ./manage_launchd.sh {install|status|start|stop|restart|logs}"
         echo ""
         echo "命令说明:"
+        echo "  install  - 首次使用：安装 launchd plist 到 ~/Library/LaunchAgents"
         echo "  status   - 查看服务状态和定时任务"
         echo "  start    - 启动服务"
         echo "  stop     - 停止服务"
