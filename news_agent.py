@@ -103,10 +103,10 @@ class NewsAgent:
             )
 
             briefing = anthropic_messages_create(
-                system="输出必须是 Markdown；语言为简体中文；不要输出代码块围栏。",
+                system="输出必须是 Markdown；语言为简体中文；不要输出代码块围栏；**严格必须只使用以下三个分类：🤖 AI前沿、📱 商业动态、🌐 科技新闻**，不要使用任何其他分类。",
                 user=user_prompt,
-                max_tokens=1400,
-                temperature=0.2,
+                max_tokens=1500,
+                temperature=0.1,
             )
 
             # 兜底：确保包含生成时间与统计
@@ -133,12 +133,8 @@ class NewsAgent:
         # 使用权重信息进行分类
         categorized_news = {
             '🤖 AI前沿': [],
-            '📰 AI日报': [],
-            '💬 Reddit热议': [],
-            '📱 科技媒体': [],
-            '🌍 国际科技': [],
-            '🏢 行业资讯': [],
-            '🔬 科学研究': []
+            '📱 商业动态': [],
+            '🌐 科技新闻': []
         }
 
         for item in news_items:
@@ -150,7 +146,7 @@ class NewsAgent:
         for category, items in categorized_news.items():
             if items:
                 briefing += f"\n## {category}\n\n"
-                for i, item in enumerate(items[:3], 1):  # 每个分类最多3条
+                for i, item in enumerate(items[:8], 1):  # 每个分类最多8条，确保能展示20条新闻
                     title = item.get('title', '')
                     url = item.get('url', '')
                     weight = item.get('_weight', 1.0)
