@@ -19,7 +19,7 @@ echo ""
 # 检查进程
 echo "📋 进程状态:"
 if pgrep -f "scheduler_daemon.py" > /dev/null; then
-    PID=$(pgrep -f "scheduler_daemon.py")
+    PID=$(pgrep -f "scheduler_daemon.py" | head -1)
     ELAPSED=$(ps -p $PID -o etime= | tr -d ' ')
     echo "✅ 进程存在 (PID: $PID, 运行时长: $ELAPSED)"
 else
@@ -31,11 +31,7 @@ echo ""
 echo "📄 日志文件状态:"
 if [ -f "logs/scheduler_execution.log" ]; then
     LINES=$(wc -l < logs/scheduler_execution.log)
-    LAST_LOG=$(tail -1 logs/scheduler_execution.log | grep -oP '\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]')
     echo "✅ 执行日志存在 ($LINES 行)"
-    if [ -n "$LAST_LOG" ]; then
-        echo "   最后日志: $LAST_LOG"
-    fi
 else
     echo "⚠️  执行日志不存在"
 fi
