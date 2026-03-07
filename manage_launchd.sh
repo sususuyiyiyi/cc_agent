@@ -2,11 +2,34 @@
 
 # CC Agent Launchd 管理脚本
 
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+PLIST_DEST="$HOME/Library/LaunchAgents/com.susu.ccaagent.scheduler.plist"
+PLIST_TEMPLATE="$PROJECT_ROOT/config/launchd/com.susu.ccaagent.scheduler.plist.template"
+
 echo "============================================================"
 echo "🚀 CC Agent 调度器 Launchd 管理"
 echo "============================================================"
 
 case "$1" in
+    install)
+        echo ""
+        echo "📦 安装 launchd 配置（首次使用或项目路径变更时执行）..."
+        if [ ! -f "$PLIST_TEMPLATE" ]; then
+            echo "❌ 模板不存在: $PLIST_TEMPLATE"
+            exit 1
+        fi
+        mkdir -p "$(dirname "$PLIST_DEST")"
+        sed "s|__PROJECT_ROOT__|$PROJECT_ROOT|g" "$PLIST_TEMPLATE" > "$PLIST_DEST"
+        echo "✅ 已写入: $PLIST_DEST"
+        echo ""
+        echo "请确保项目根目录有 .env 并配置模型环境变量，例如："
+        echo "  ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic"
+        echo "  ANTHROPIC_AUTH_TOKEN=你的key"
+        echo "  ANTHROPIC_MODEL=glm-4.5-air"
+        echo ""
+        echo "然后执行: ./manage_launchd.sh start"
+        ;;
+
     status)
         echo ""
         echo "📊 服务状态:"
@@ -34,12 +57,16 @@ case "$1" in
     start)
         echo ""
         echo "🚀 启动服务..."
+        if [ ! -f "$PLIST_DEST" ]; then
+            echo "❌ 未安装 plist。请先执行: ./manage_launchd.sh install"
+            exit 1
+        fi
         if launchctl list | grep -q "com.susu.ccaagent.scheduler"; then
             echo "⚠️ 服务已在运行，尝试重启..."
-            launchctl unload ~/Library/LaunchAgents/com.susu.ccaagent.scheduler.plist
+            launchctl unload "$PLIST_DEST"
             sleep 1
         fi
-        launchctl load ~/Library/LaunchAgents/com.susu.ccaagent.scheduler.plist
+        launchctl load "$PLIST_DEST"
         sleep 2
         echo "✅ 服务已启动"
         launchctl list | grep "com.susu.ccaagent.scheduler"
@@ -49,7 +76,7 @@ case "$1" in
         echo ""
         echo "🛑 停止服务..."
         if launchctl list | grep -q "com.susu.ccaagent.scheduler"; then
-            launchctl unload ~/Library/LaunchAgents/com.susu.ccaagent.scheduler.plist
+            launchctl unload "$PLIST_DEST"
             echo "✅ 服务已停止"
         else
             echo "⚠️ 服务未运行"
