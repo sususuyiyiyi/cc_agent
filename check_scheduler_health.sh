@@ -77,12 +77,13 @@ echo ""
 
 # 检查是否有错误
 echo "🚨 错误检查:"
-ERROR_COUNT=0
 if [ -f "logs/scheduler_execution.log" ]; then
-    ERROR_COUNT=$(grep -c '\[ERROR\]' logs/scheduler_execution.log || echo 0)
+    ERROR_COUNT=$(grep -c '\[ERROR\]' logs/scheduler_execution.log 2>/dev/null || echo 0)
+else
+    ERROR_COUNT=0
 fi
 
-if [ "$ERROR_COUNT" = "0" ]; then
+if [ "$ERROR_COUNT" = "0" ] || [ "$ERROR_COUNT" = "" ]; then
     echo "✅ 没有发现错误"
 else
     echo "⚠️  发现 $ERROR_COUNT 个错误"
