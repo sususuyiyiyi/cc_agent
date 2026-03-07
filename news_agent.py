@@ -45,12 +45,12 @@ class NewsAgent:
             # 使用新闻聚合器（支持多个源）
             from scripts.news_aggregator import NewsAggregator
             aggregator = NewsAggregator()
-            news_items = aggregator.fetch_daily_news(max_news=10)
+            news_items = aggregator.fetch_daily_news(max_news=20)
         else:
             # 使用权重新闻获取器（优先级和热点）
             from scripts.fetch_news_weighted import WeightedNewsFetcher
             fetcher = WeightedNewsFetcher()
-            news_items = fetcher.fetch_daily_news(max_news=10)
+            news_items = fetcher.fetch_daily_news(max_news=20)
 
         return news_items
 
@@ -66,7 +66,7 @@ class NewsAgent:
 
             # 限制输入长度，避免 payload 过大
             compact_items = []
-            for item in news_items[:12]:
+            for item in news_items[:20]:
                 compact_items.append(
                     {
                         "title": (item.get("title") or "").strip(),
@@ -87,11 +87,8 @@ class NewsAgent:
                 "3) 添加一个\"🔥 今日热点\"部分，精选 3-5 条最重要的新闻（考虑来源权重和相关性）\n"
                 "4) 按照以下分类整理新闻（使用对应的emoji）：\n"
                 "   🤖 AI前沿 - AI垂直媒体和研究机构新闻\n"
-                "   📰 AI日报 - AI日报类媒体精选\n"
-                "   📱 科技媒体 - 科技媒体深度报道\n"
-                "   🌍 国际科技 - 国际科技媒体新闻\n"
-                "   🏢 行业资讯 - 产业动态和商业新闻\n"
-                "   🔬 科学研究 - 科研机构和技术创新\n"
+                "   📱 商业动态 - 科技行业商业新闻和产业动态\n"
+                "   🌐 科技新闻 - 科技媒体综合报道\n"
                 "5) 每条新闻格式：\n"
                 "   - 使用 ## 类标题\n"
                 "   - 标题前添加emoji（根据类别）\n"
