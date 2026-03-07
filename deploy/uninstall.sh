@@ -58,10 +58,6 @@ print_info "删除 systemd 服务..."
 rm -f "/etc/systemd/system/${SERVICE_NAME}.service"
 systemctl daemon-reload
 
-# 删除定时任务
-print_info "删除定时任务..."
-crontab -l 2>/dev/null | grep -v "cc_agent" | crontab - 2>/dev/null || true
-
 # 备份选项
 echo ""
 read -p "是否备份数据？(yes/no): " backup_confirm

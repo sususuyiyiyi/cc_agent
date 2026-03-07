@@ -445,7 +445,7 @@ create_systemd_service() {
 
     cat > "$SERVICE_FILE" << EOF
 [Unit]
-Description=CC Agent Scheduler Daemon
+Description=CC Agent Scheduler - Manages news, wellness, and review tasks
 After=network.target
 
 [Service]
@@ -605,10 +605,10 @@ show_deployment_info() {
     echo "服务名称: $SERVICE_NAME"
     echo ""
     echo -e "${YELLOW}重要提示：${NC}"
-    echo "1. 请修改配置文件中的 webhook_url："
-    echo "   vim $PROJECT_DIR/config/config.yaml"
+    echo "1. 配置飞书 Webhook："
+    echo "   cd $PROJECT_DIR/deploy && bash quick_config.sh"
     echo ""
-    echo "2. 请修改 .env 文件中的 API 密钥："
+    echo "2. 配置 API 密钥（在 .env 文件中）："
     echo "   vim $PROJECT_DIR/.env"
     echo ""
     echo "3. 修改配置后重启服务："
@@ -632,11 +632,19 @@ show_deployment_info() {
     echo "   python3 wellness_agent.py  # 测试健康提醒"
     echo "   python3 review_agent.py    # 测试回顾"
     echo ""
-    echo "9. 常用命令："
+    echo "9. 运行测试脚本："
+    echo "   cd $PROJECT_DIR/deploy && bash test.sh"
+    echo ""
+    echo "10. 常用命令："
     echo "   systemctl start $SERVICE_NAME   # 启动服务"
     echo "   systemctl stop $SERVICE_NAME    # 停止服务"
     echo "   systemctl restart $SERVICE_NAME # 重启服务"
     echo "   systemctl enable $SERVICE_NAME # 开机自启"
+    echo ""
+    echo -e "${BLUE}架构说明：${NC}"
+    echo "- 使用 systemd 管理进程生命周期（开机自启、崩溃重启）"
+    echo "- 使用 APScheduler 管理定时任务（支持健康检查和监控）"
+    echo "- 保留所有三个任务：新闻播报（08:00）、健康提醒（08:30）、晚间回顾（20:00）"
     echo ""
     echo -e "${GREEN}============================================================${NC}"
 }

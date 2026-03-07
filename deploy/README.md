@@ -79,8 +79,8 @@ bash install.sh
 - ✅ 创建虚拟环境
 - ✅ 安装依赖包
 - ✅ 配置 systemd 服务
-- ✅ 设置定时任务
-- ✅ 启动服务
+- ✅ 创建环境变量模板
+- ✅ 启动调度器服务
 
 ### 第 4 步：配置飞书 Webhook
 
@@ -117,7 +117,8 @@ bash test.sh
 ### 主要配置文件
 
 ```bash
-/opt/cc_agent/config/config.yaml
+/opt/cc_agent/config/config.yaml    # 主配置文件
+/opt/cc_agent/.env                  # 环境变量（API 密钥等）
 ```
 
 ### 关键配置项
@@ -127,6 +128,10 @@ bash test.sh
 feishu:
   webhook_url: "你的飞书webhook地址"
   enabled: true
+  message:
+    news_enabled: true
+    review_enabled: true   # 保留回顾功能
+    wellness_enabled: true
 ```
 
 #### 定时任务配置
@@ -141,8 +146,17 @@ scheduling:
     enabled: true
     time: "08:30"  # 每天 8:30 发送健康提醒
   review_su:
-    enabled: false  # 服务器端不需要回顾
+    enabled: true   # 保留回顾功能
     time: "20:00"
+```
+
+#### 环境变量配置
+```bash
+# 在 /opt/cc_agent/.env 文件中配置
+ANTHROPIC_BASE_URL=https://open.bigmodel.cn/api/anthropic
+ANTHROPIC_AUTH_TOKEN=your_api_key_here
+ANTHROPIC_MODEL=glm-4.5-air
+TZ=Asia/Shanghai
 ```
 
 ### 修改配置后
@@ -182,14 +196,14 @@ systemctl disable cc_agent
 ### 查看日志
 
 ```bash
-# 服务日志
-tail -f /opt/cc_agent/logs/cc_agent_service.log
+# 调度器服务日志
+tail -f /opt/cc_agent/logs/scheduler_service.log
 
-# 新闻任务日志
-tail -f /opt/cc_agent/logs/news_cron.log
+# 调度器执行日志
+tail -f /opt/cc_agent/logs/scheduler_execution.log
 
-# 健康提醒日志
-tail -f /opt/cc_agent/logs/wellness_cron.log
+# 健康检查数据
+cat /opt/cc_agent/logs/scheduler_health.json
 
 # 查看所有日志
 ls -la /opt/cc_agent/logs/
@@ -214,17 +228,17 @@ python3 wellness_agent.py
 python3 review_agent.py
 ```
 
-### 定时任务管理
+### 查看调度器状态
 
 ```bash
-# 查看定时任务
-crontab -l
+# 查看健康检查数据
+cat /opt/cc_agent/logs/scheduler_health.json
 
-# 编辑定时任务
-crontab -e
+# 查看已配置的任务
+cat /opt/cc_agent/logs/scheduler_execution.log | grep "已配置任务"
 
-# 删除定时任务
-crontab -r
+# 查看任务执行历史
+cat /opt/cc_agent/logs/scheduler_health.json | grep "last_execution"
 ```
 
 ## 🔧 故障排除
@@ -264,16 +278,16 @@ client.send_card_message('测试', '测试消息')
 ### 定时任务不执行
 
 ```bash
-# 检查 cron 服务状态
-systemctl status cron
+# 检查调度器健康状态
+cat /opt/cc_agent/logs/scheduler_health.json
 
-# 查看 cron 日志
-grep CRON /var/log/syslog
+# 检查调度器执行日志
+tail -50 /opt/cc_agent/logs/scheduler_execution.log
 
-# 检查定时任务列表
-crontab -l
+# 检查服务日志
+journalctl -u cc_agent -f
 
-# 手动测试定时任务命令
+# 手动测试任务
 cd /opt/cc_agent && /opt/cc_agent/venv/bin/python3 news_agent.py
 ```
 
@@ -369,12 +383,13 @@ top
 
 ### 设置监控告警
 
-CC Agent 已包含基本监控，会每小时检查：
-- 磁盘空间
-- 内存使用
-- 服务状态
+CC Agent 调度器已内置健康检查功能：
+- **自动健康检查**：每小时检查调度器状态
+- **任务执行监控**：记录每个任务的执行历史
+- **异常通知**：任务失败或异常时发送飞书通知
+- **任务丢失检测**：自动检测是否有任务丢失
 
-监控日志位于：`/opt/cc_agent/logs/monitor.log`
+监控数据位于：`/opt/cc_agent/logs/scheduler_health.json`
 
 ## 💰 成本估算
 
@@ -416,8 +431,11 @@ CC Agent 已包含基本监控，会每小时检查：
 恭喜！你现在拥有了 24/7 自动运行的 CC Agent！
 
 **预期效果：**
-- ✅ 每天 08:00 自动发送新闻
-- ✅ 每天 08:30 自动发送健康提醒
-- ✅ 即使电脑关机也能正常接收消息
+- ✅ 每天 08:00 自动发送新闻简报到飞书
+- ✅ 每天 08:30 自动发送健康提醒到飞书
+- ✅ 每天 20:00 自动发送晚间回顾任务到飞书（交互式，需要用户响应）
+- ✅ 即使个人电脑关机，也能正常接收消息
+- ✅ 服务崩溃时自动重启
+- ✅ 每小时执行健康检查，异常时发送飞书通知
 
 享受自动化带来的便利！🚀
