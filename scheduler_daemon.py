@@ -8,9 +8,10 @@ import os
 import sys
 import signal
 import time
+import json
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List
 
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
