@@ -122,6 +122,52 @@ class FeishuClient:
             print(f"❌ 发送消息时出错: {e}")
             return False
 
+    def send_card_message(self, title: str, content: str) -> bool:
+        """发送简单的卡片消息（用于测试和通知）"""
+        if not self.webhook_url:
+            print("⚠️ 飞书 Webhook URL 未配置")
+            return False
+
+        data = {
+            "msg_type": "interactive",
+            "card": {
+                "header": {
+                    "title": {
+                        "tag": "plain_text",
+                        "content": title
+                    }
+                },
+                "elements": [
+                    {
+                        "tag": "div",
+                        "text": {
+                            "tag": "lark_md",
+                            "content": content
+                        }
+                    }
+                ]
+            }
+        }
+
+        try:
+            response = requests.post(
+                self.webhook_url,
+                json=data,
+                headers={"Content-Type": "application/json"}
+            )
+            result = response.json()
+
+            if result.get("code") == 0:
+                print("✅ 卡片消息发送成功")
+                return True
+            else:
+                print(f"❌ 卡片消息发送失败: {result.get('msg')}")
+                return False
+
+        except Exception as e:
+            print(f"❌ 发送消息时出错: {e}")
+            return False
+
     def send_news_briefing(self, news_items: list, date: str) -> bool:
         """发送新闻简报（简洁格式，支持超链接）"""
         title = f"📰 今日新闻简报 - {date}"
