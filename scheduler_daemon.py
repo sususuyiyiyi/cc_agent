@@ -324,31 +324,44 @@ class CCSchedulerDaemon:
         if not self.setup_scheduler():
             return False
 
-        print("🚀 CC Agent 调度器启动")
-        print("=" * 60)
-        print(f"启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"时区: Asia/Shanghai")
-        print("=" * 60)
+        self._log_message("=" * 60, "INFO")
+        self._log_message("🚀 CC Agent 调度器启动", "INFO")
+        self._log_message("=" * 60, "INFO")
+        self._log_message(f"启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", "INFO")
+        self._log_message(f"时区: Asia/Shanghai", "INFO")
+        self._log_message("=" * 60, "INFO")
 
         # 显示配置的任务
         jobs = self.scheduler.get_jobs()
         if jobs:
-            print("\n📋 已配置任务:")
+            self._log_message("\n📋 已配置任务:", "INFO")
             for job in jobs:
-                print(f"   {job.id} - {job.name} ({job.trigger})")
+                self._log_message(f"   {job.id} - {job.name} ({job.trigger})", "INFO")
         else:
-            print("⚠️ 没有配置任何任务")
+            self._log_message("⚠️ 没有配置任何任务", "WARNING")
 
-        print("\n✅ 调度器已启动，等待任务执行...")
-        print("按 Ctrl+C 停止\n")
+        self._log_message("\n✅ 调度器已启动，等待任务执行...", "INFO")
+        self._log_message("按 Ctrl+C 停止\n", "INFO")
 
         self.running = True
         self.scheduler.start()
+
+        # 定期健康检查（每小时）
+        health_check_interval = 3600  # 1小时
+        last_health_check = time.time()
 
         # 保持运行
         try:
             while self.running:
                 time.sleep(1)
+
+                # 定期执行健康检查
+                current_time = time.time()
+                if current_time - last_health_check >= health_check_interval:
+                    self._log_message("执行健康检查...", "INFO")
+                    self._perform_health_check()
+                    last_health_check = current_time
+
         except KeyboardInterrupt:
             self.stop()
 
@@ -359,13 +372,19 @@ class CCSchedulerDaemon:
         if self.running:
             self.running = False
             self.scheduler.shutdown(wait=True)
+            self._log_message(f"🛑 调度器已停止 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             print("\n🛑 调度器已停止")
+
+            # 保存最终的健康检查数据
+            self._save_health_check()
 
     def status(self) -> dict:
         """获取调度器状态"""
         return {
             'running': self.running,
-            'jobs_count': len(self.scheduler.get_jobs()) if self.scheduler else 0
+            'jobs_count': len(self.scheduler.get_jobs()) if self.scheduler else 0,
+            'jobs': [job.id for job in self.scheduler.get_jobs()] if self.scheduler else [],
+            'job_history': self.job_history
         }
 
 if __name__ == "__main__":
@@ -375,10 +394,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # 设置并启动调度器
-    scheduler_daemon = CCSchedulerDaemon()
+    try:
+        scheduler_daemon = CCSchedulerDaemon()
 
-    if scheduler_daemon.start():
-        print("\n✅ 调度器守护进程运行完成")
-    else:
-        print("\n❌ 调度器启动失败")
+        if scheduler_daemon.start():
+            print("\n✅ 调度器守护进程运行完成")
+        else:
+            print("\n❌ 调度器启动失败")
+            sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ 调度器异常: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
