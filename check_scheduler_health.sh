@@ -79,16 +79,16 @@ echo ""
 echo "🚨 错误检查:"
 ERROR_COUNT=0
 if [ -f "logs/scheduler_execution.log" ]; then
-    ERROR_COUNT=$(grep -c "\[ERROR\]" logs/scheduler_execution.log || echo 0)
+    ERROR_COUNT=$(grep -c '\[ERROR\]' logs/scheduler_execution.log || echo 0)
 fi
 
-if [ $ERROR_COUNT -eq 0 ]; then
+if [ "$ERROR_COUNT" = "0" ]; then
     echo "✅ 没有发现错误"
 else
     echo "⚠️  发现 $ERROR_COUNT 个错误"
     echo ""
     echo "   最近的错误:"
-    grep "\[ERROR\]" logs/scheduler_execution.log | tail -3 | sed 's/^/      /'
+    grep '\[ERROR\]' logs/scheduler_execution.log | tail -3 | sed 's/^/      /'
 fi
 echo ""
 
@@ -97,7 +97,7 @@ echo "============================================================"
 echo "📋 总结"
 echo "============================================================"
 if [ -f "logs/scheduler_health.json" ]; then
-    python3 -c "
+    python3 << 'PYTHON_EOF'
 import json
 from datetime import datetime
 try:
@@ -108,7 +108,7 @@ try:
     missing = set(expected_jobs) - set(jobs)
 
     if missing:
-        print(f'⚠️  警告: 发现丢失的任务: {", ".join(missing)}')
+        print('⚠️  警告: 发现丢失的任务: ' + ', '.join(missing))
     else:
         print('✅ 所有预期任务都已加载')
 
@@ -118,12 +118,12 @@ try:
         check_time = datetime.fromisoformat(last_check)
         hours_ago = (datetime.now() - check_time).total_seconds() / 3600
         if hours_ago > 24:
-            print(f'⚠️  警告: 健康检查数据超过 {int(hours_ago)} 小时未更新')
+            print('⚠️  警告: 健康检查数据超过 ' + str(int(hours_ago)) + ' 小时未更新')
         else:
-            print(f'✅ 健康检查数据正常 ({int(hours_ago)} 小时前更新)')
+            print('✅ 健康检查数据正常 (' + str(int(hours_ago)) + ' 小时前更新)')
 except Exception as e:
-    print(f'⚠️  无法分析健康数据: {e}')
-"
+    print('⚠️  无法分析健康数据: ' + str(e))
+PYTHON_EOF
 fi
 
 echo "============================================================"
