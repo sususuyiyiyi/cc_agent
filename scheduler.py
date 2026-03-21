@@ -53,7 +53,9 @@ class CCScheduler:
             func=func,
             trigger=trigger,
             id=job_id,
-            name=f"{job_id} - 每日 {hour:02d}:{minute:02d}"
+            name=f"{job_id} - 每日 {hour:02d}:{minute:02d}",
+            misfire_grace_time=3600,  # 允许错过1小时内仍执行
+            coalesce=False  # 不合并错过的执行
         )
 
         self.jobs[job_id] = {
