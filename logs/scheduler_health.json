@@ -1,29 +1,7 @@
 {
-  "last_check": "2026-03-23T20:00:03.691982",
-  "jobs": {
-    "review_su": {
-      "last_execution": "2026-03-23 20:00:03",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 7,
-      "total_failures": 0
-    },
-    "news_su": {
-      "last_execution": "2026-03-22 08:00:45",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 1,
-      "total_failures": 0
-    },
-    "wellness_su": {
-      "last_execution": "2026-03-22 08:30:00",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 1,
-      "total_failures": 0
-    }
-  },
-  "scheduler_running": true,
+  "last_check": "2026-03-23T20:38:59.574309",
+  "jobs": {},
+  "scheduler_running": false,
   "jobs_in_scheduler": [
     "news_su",
     "wellness_su",
