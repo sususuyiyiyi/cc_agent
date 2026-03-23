@@ -95,6 +95,31 @@ class CCScheduler:
 
         print("\n" + "=" * 60)
 
+    def check_missed_jobs(self):
+        """检查今天错过的任务并补发"""
+        from datetime import date
+        today = date.today()
+
+        # 检查今天新闻是否已发送
+        news_file = PROJECT_ROOT / "data" / "news" / str(today.year) / f"{today.month:02d}" / f"{today.day:02d}" / "今日新闻.md"
+
+        # 只有在当前时间晚于任务时间时才检查
+        current_time = datetime.now()
+        check_time = datetime(current_time.year, current_time.month, current_time.day, 8, 5, 0)  # 08:05 之后检查
+
+        if current_time > check_time and not news_file.exists():
+            job_id = 'news_su'
+            if job_id in self.jobs:
+                print(f"\n⏰ 检测到今天 {job_id} 任务未执行，立即执行...\n")
+                # 从调度器中获取任务的函数并执行
+                job = self.scheduler.get_job(job_id)
+                if job and job.func:
+                    try:
+                        job.func()
+                        print(f"✅ {job_id} 补发完成\n")
+                    except Exception as e:
+                        print(f"❌ {job_id} 补发失败: {e}\n")
+
     def start(self):
         """启动调度器"""
         print("\n" + "=" * 60)
@@ -102,6 +127,9 @@ class CCScheduler:
         print("=" * 60)
         print(f"\n启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"已配置任务: {len(self.jobs)} 个\n")
+
+        # 检查错过的任务
+        self.check_missed_jobs()
 
         try:
             self.scheduler.start()
