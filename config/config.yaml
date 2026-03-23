@@ -133,7 +133,7 @@ scheduling:
   timezone: Asia/Shanghai
   news_su:
     enabled: true
-    time: 08:00
+    time: 09:00
   review_su:
     enabled: true
     time: '20:00'
