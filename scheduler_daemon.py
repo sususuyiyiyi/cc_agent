@@ -161,25 +161,52 @@ class CCSchedulerDaemon:
                 self._send_feishu_notification("调度器健康检查警告", error_msg, urgent=True)
                 return False
 
-            # 检查是否有长时间未执行的任务
+            # 检查数据文件中的最后执行时间（而不是内存中的历史）
             now = datetime.now()
-            for job_id in self.expected_jobs:
-                if job_id in self.job_history:
-                    last_exec = self.job_history[job_id].get('last_execution')
-                    if last_exec:
-                        last_exec_time = datetime.strptime(last_exec, '%Y-%m-%d %H:%M:%S')
-                        hours_since = (now - last_exec_time).total_seconds() / 3600
 
-                        # 如果超过36小时没有执行（最多错过1天）
-                        if hours_since > 36:
-                            warning_msg = f"⚠️ 任务 {job_id} 已超过 {int(hours_since)} 小时未执行"
-                            self._log_message(warning_msg, "WARNING")
-                            self._send_feishu_notification(f"任务 {job_id} 未执行警告", warning_msg)
+            def check_last_execution_from_data(job_id: str, data_dir: Path, file_pattern: str, job_name: str):
+                """从数据文件检查最后执行时间"""
+                try:
+                    if not data_dir.exists():
+                        self._log_message(f"⚠️ 数据目录不存在: {data_dir}", "WARNING")
+                        return
+
+                    # 查找最新的数据文件
+                    all_files = list(data_dir.rglob(file_pattern))
+                    if not all_files:
+                        self._log_message(f"⚠️ 未找到 {job_name} 的数据文件", "WARNING")
+                        return
+
+                    # 按修改时间排序，获取最新的
+                    all_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+                    latest_file = all_files[0]
+
+                    # 获取文件修改时间
+                    last_exec_time = datetime.fromtimestamp(latest_file.stat().st_mtime)
+                    hours_since = (now - last_exec_time).total_seconds() / 3600
+
+                    # 如果超过36小时没有执行（最多错过1天）
+                    if hours_since > 36:
+                        warning_msg = f"⚠️ 任务 {job_id} 已超过 {int(hours_since)} 小时未执行（最后执行: {last_exec_time.strftime('%Y-%m-%d %H:%M:%S')}）"
+                        self._log_message(warning_msg, "WARNING")
+                        self._send_feishu_notification(f"任务 {job_id} 未执行警告", warning_msg)
+                    else:
+                        self._log_message(f"✅ {job_name} 正常（最后执行: {int(hours_since)} 小时前）", "INFO")
+
+                except Exception as e:
+                    self._log_message(f"检查 {job_name} 失败: {e}", "ERROR")
+
+            # 检查各个任务
+            check_last_execution_from_data('review_su', PROJECT_ROOT / "data" / "reviews", "*.md", "晚间回顾")
+            check_last_execution_from_data('news_su', PROJECT_ROOT / "data" / "news", "今日新闻.md", "每日新闻")
+            check_last_execution_from_data('wellness_su', PROJECT_ROOT / "data" / "wellness", "健康提醒.md", "健康提醒")
 
             return True
 
         except Exception as e:
             self._log_message(f"健康检查失败: {e}", "ERROR")
+            import traceback
+            traceback.print_exc()
             return False
 
     def _job_executed(self, event):
@@ -252,7 +279,7 @@ class CCSchedulerDaemon:
                     trigger=CronTrigger(hour=hour, minute=minute, timezone='Asia/Shanghai'),
                     id='news_su',
                     name='每日新闻',
-                    misfire_grace_time=300,  # 5 分钟的错过执行宽容时间
+                    misfire_grace_time=7200,  # 2 小时的错过执行宽容时间
                     coalesce=True,  # 合并错过的执行
                     max_instances=1  # 只允许一个实例
                 )
@@ -277,7 +304,7 @@ class CCSchedulerDaemon:
                     trigger=CronTrigger(hour=hour, minute=minute, timezone='Asia/Shanghai'),
                     id='wellness_su',
                     name='健康提醒',
-                    misfire_grace_time=300,
+                    misfire_grace_time=7200,  # 2 小时的错过执行宽容时间
                     coalesce=True,
                     max_instances=1
                 )
@@ -302,7 +329,7 @@ class CCSchedulerDaemon:
                     trigger=CronTrigger(hour=hour, minute=minute, timezone='Asia/Shanghai'),
                     id='review_su',
                     name='晚间回顾',
-                    misfire_grace_time=300,
+                    misfire_grace_time=7200,  # 2 小时的错过执行宽容时间
                     coalesce=True,
                     max_instances=1
                 )

@@ -1,18 +1,6 @@
 {
-  "last_check": "2026-03-26T20:00:50.144327",
-  "jobs": {
-    "review_su": {
-      "last_execution": "2026-03-26 20:00:50",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 1,
-      "total_failures": 0
-    }
-  },
-  "scheduler_running": true,
-  "jobs_in_scheduler": [
-    "wellness_su",
-    "news_su",
-    "review_su"
-  ]
+  "last_check": "2026-03-30T20:53:07.705180",
+  "jobs": {},
+  "scheduler_running": false,
+  "jobs_in_scheduler": []
 }
