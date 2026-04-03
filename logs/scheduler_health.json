@@ -1,6 +1,10 @@
 {
-  "last_check": "2026-03-30T20:53:07.705180",
+  "last_check": "2026-04-03T11:41:45.929898",
   "jobs": {},
   "scheduler_running": false,
-  "jobs_in_scheduler": []
+  "jobs_in_scheduler": [
+    "news_su",
+    "wellness_su",
+    "review_su"
+  ]
 }
