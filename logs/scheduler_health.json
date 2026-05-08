@@ -1,5 +1,5 @@
 {
-  "last_check": "2026-05-06T09:11:37.996725",
+  "last_check": "2026-05-08T09:46:02.934735",
   "jobs": {
     "review_su": {
       "last_execution": "2026-04-05 20:51:08",
@@ -9,17 +9,17 @@
       "total_failures": 0
     },
     "news_su": {
-      "last_execution": "2026-05-06 09:11:37",
+      "last_execution": "2026-05-08 09:46:02",
       "last_success": true,
       "last_error": null,
-      "total_executions": 8,
+      "total_executions": 9,
       "total_failures": 0
     },
     "wellness_su": {
-      "last_execution": "2026-05-06 08:30:02",
+      "last_execution": "2026-05-08 09:29:17",
       "last_success": true,
       "last_error": null,
-      "total_executions": 7,
+      "total_executions": 8,
       "total_failures": 0
     }
   },
