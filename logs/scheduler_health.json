@@ -1,11 +1,11 @@
 {
-  "last_check": "2026-05-21T09:39:23.714281",
+  "last_check": "2026-05-23T20:47:57.324466",
   "jobs": {
     "review_su": {
-      "last_execution": "2026-05-19 20:45:07",
+      "last_execution": "2026-05-23 20:47:57",
       "last_success": true,
       "last_error": null,
-      "total_executions": 5,
+      "total_executions": 6,
       "total_failures": 0
     },
     "news_su": {
@@ -25,8 +25,8 @@
   },
   "scheduler_running": true,
   "jobs_in_scheduler": [
-    "review_su",
     "wellness_su",
-    "news_su"
+    "news_su",
+    "review_su"
   ]
 }
