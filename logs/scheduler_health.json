@@ -1,25 +1,10 @@
 {
-  "last_check": "2026-09-21T10:21:43.081526",
-  "jobs": {
-    "wellness_su": {
-      "last_execution": "2026-09-21 10:21:08",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 1,
-      "total_failures": 0
-    },
-    "news_su": {
-      "last_execution": "2026-09-21 10:21:43",
-      "last_success": true,
-      "last_error": null,
-      "total_executions": 1,
-      "total_failures": 0
-    }
-  },
-  "scheduler_running": true,
+  "last_check": "2026-09-23T10:10:50.565075",
+  "jobs": {},
+  "scheduler_running": false,
   "jobs_in_scheduler": [
-    "review_su",
+    "news_su",
     "wellness_su",
-    "news_su"
+    "review_su"
   ]
 }
